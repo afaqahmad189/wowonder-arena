@@ -10,7 +10,7 @@
   
 	<?php if ($wo['setting']['balance'] < $wo['config']['m_withdrawal']): ?>
 	<div class="alert alert-danger">
-		<?php 
+		<?php
 			$your_balance = str_replace('{balance}',  $wo['setting']['balance'], $wo['lang']['your_balance']); 
 			$your_balance = str_replace('{m_withdrawal}',  $wo['config']['m_withdrawal'], $your_balance); 
 			$your_balance = str_replace('$', Wo_GetCurrency($wo['config']['ads_currency']), $your_balance);

@@ -6,7 +6,7 @@
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"></path></svg></button>
                 <h4><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12,13A5,5 0 0,1 7,8H9A3,3 0 0,0 12,11A3,3 0 0,0 15,8H17A5,5 0 0,1 12,13M12,3A3,3 0 0,1 15,6H9A3,3 0 0,1 12,3M19,6H17A5,5 0 0,0 12,1A5,5 0 0,0 7,6H5C3.89,6 3,6.89 3,8V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V8C21,6.89 20.1,6 19,6Z"></path></svg> <?php echo $wo['lang']['create-new-challagne'] ?></h4>
             </div>
-            <form class="create-album-form form-horizontal" method="post">
+            <form class="create-album-form form-horizontal" id="challange_form" method="post">
                 <div class="modal-body">
                     <div class="app-general-alert setting-update-alert"></div>
 
@@ -19,8 +19,8 @@
                         </div>
                         <div class="col-md-4">
                             <div class="wow_form_fields">
-                                <label for="coins">Coins</label>
-                                <input id="price" name="price" type="text" value="">
+                                <label for="price"><?php echo $wo['lang']['coins']; ?></label>
+                                <input id="price" name="price" type="text" placeholder="0.00" value="">
                             </div>
                         </div>
                     </div>
@@ -28,31 +28,35 @@
                         <div class="col-md-8">
                             <div class="wow_form_fields">
                                 <label for="category"><?php echo $wo['lang']['category'] ?></label>
-                                <select name="category" id="category">
-                                     <option value="Playstation">Playstation</option>
-                                     <option value="Xbox">Xbox</option>
-                                     <option value="PC">PC</option>
-                                     <option value="Switch">Switch</option>
-                                     <option value="Other">Other</option>
+                                <select name="category" id="category" onchange="GetProductSubCategory(this)">
+                                   <option value="1"><?php echo $wo['lang']['playstation'] ?></option>
+                                   <option value="2"><?php echo $wo['lang']['xbox'] ?></option>
+                                   <option value="3"><?php echo $wo['lang']['pc'] ?></option>
+                                   <option value="4"><?php echo $wo['lang']['switch'] ?></option>
+                                   <option value="5"><?php echo $wo['lang']['other'] ?></option>
+
+
                                 </select>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="wow_form_fields">
-                                <label for="type">Crossplay</label>
+                                <label for="type"><?php echo $wo['lang']['crossplay']; ?></label>
                                 <select name="type" id="type">
-                                    <option value="yes">Yes</option>
-                                    <option value="no">No</option>
+                                    <option value="0"><?php echo $wo['lang']['yes'] ?></option>
+                                    <option value="1"><?php echo $wo['lang']['no'] ?></option>
                                 </select>
                             </div>
                         </div>
                     </div>
+<!--                     <div class="wow_form_fields">-->
+<!--                        <label for="no_of_challange"><?php echo $wo['lang']['no_of_challange'] ?></label>-->
+<!--                        <input type="text" name="no_of_challange" rows="3" id="no_of_challange" placeholder="0"></input>-->
+<!--                    </div>-->
                     <div class="wow_form_fields">
                         <label for="description"><?php echo $wo['lang']['description'] ?></label>
                         <textarea name="description" rows="3" id="description" placeholder="<?php echo $wo['lang']['please_describe_your_product'] ?>"></textarea>
                     </div>
-<!--                    <input id="price" name="price" type="hidden" placeholder="0.00" value="1">-->
-
                     <?php $fields = Wo_GetCustomFields('product');
                     if (!empty($fields)) {
                         foreach ($fields as $key => $wo['field']) {
@@ -90,7 +94,7 @@
                     <input type="hidden" name="lng-product" id="lng-product" class="form-control input-md" value="">
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-main btn-mat btn-mat-raised add_wow_loader"><?php echo $wo['lang']['publish']; ?></button>
+                    <button type="submit" class="btn btn-main btn-mat btn-mat-raised add_wow_loader"><?php echo $wo['lang']['add_new_challange']; ?></button>
                 </div>
             </form>
         </div>
@@ -155,13 +159,11 @@
         var create_percent = $('.create-product-percent');
         var status = $('#status');
         $('form.create-album-form').ajaxForm({
-            url: Wo_Ajax_Requests_File() + '?f=products&s=create',
+            url: Wo_Ajax_Requests_File() + '?f=challanges&s=create',
             beforeSend: function() {
                 var percentVal = '0%';
                 create_bar.width(percentVal);
                 create_percent.html(percentVal);
-
-
                 $('.create-album-form').find('.add_wow_loader').addClass('btn-loading');
             },
             uploadProgress: function (event, position, total, percentComplete) {

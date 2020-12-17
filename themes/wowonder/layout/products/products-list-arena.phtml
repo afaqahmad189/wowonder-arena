@@ -6,8 +6,8 @@
             <?php if ($wo['loggedin']) { if (1==1) { ?>
                 <div class="product-links">
 
-                    <a class="more-info btn btn-mat" href="<?php echo $wo['product']['url']?>" target="_blank"><?php echo $wo['lang']['view'] ?></a>
-                    <a class="more-info btn btn-mat" style="background-color: dodgerblue;" href="<?php echo $wo['product']['url']?>" target="_blank"><?php echo $wo['lang']['accept'] ?></a>
+                    <a class="more-info btn btn-mat" href="<?php echo $wo['product']['url']?>" data-ajax="?link1=challange&id=<?php echo $wo['product']['post_id'];?>" target="_blank"><?php echo $wo['lang']['view'] ?></a>
+                    <a class="more-info btn btn-mat" style="background-color: dodgerblue;" href="<?php echo $wo['product']['url']?>"data-ajax="?link1=challange&id=<?php echo $wo['product']['post_id'];?>" target="_blank"><?php echo $wo['lang']['accept'] ?></a>
                 </div>
             <?php } else { ?>
             <?php } ?>
@@ -17,12 +17,9 @@
                 $product_by_ = $wo['product']['category'];
                 $product_by_ = str_replace('{product_category_name}', $wo['products_categories'][$wo['product']['category']], $product_by_);
                 ?>
-                <a href="<?php echo Wo_SeoLink('index.php?link1=products&c_id=' . $wo['product']['currency']);?>">$<?php echo $wo['product']['price'];?></a>
-                <?php if (!empty($wo['product']['product_sub_category'])) { ?>
-                    <div>
-                        <a href="<?php echo Wo_SeoLink('index.php?link1=products&c_id=' . $wo['product']['category']);?>"><?php echo $wo['product']['product_sub_category'];?></a>
-                    </div>
-                <?php } ?>
+                <a href="javascript:void(0)">
+                $<?php echo $wo['product']['price'];?>
+                </a>
             </div>
         </div>
         <div class="produc_info">
@@ -33,14 +30,6 @@
 <!--                --><?php //echo (!empty($wo['currencies'][$wo['product']['currency']]['symbol'])) ? $wo['currencies'][$wo['product']['currency']]['symbol'] : $wo['config']['classified_currency_s'];?><!----><?php //echo $wo['product']['price']?>
             </div>
         </div>
-        <!--<div class="wow_main_prod_foot">
-            <?php /*if ($wo['loggedin']) { if ($wo['product']['seller']['id'] != $wo['user']['user_id']) { */?>
-                <button class="contact btn btn-success btn-mat" onclick="Wo_OpenChatTab(<?php /*echo $wo['product']['seller']['id']*/?>,0,<?php /*echo $wo['product']['id']*/?>)"><?php /*echo $wo['lang']['contact_seller'] */?></button>
-            <?php /*} else { */?>
-                <a class="btn btn-main btn-mat" href="<?php /*echo $wo['product']['url']*/?>" target="_blank"><?php /*echo $wo['lang']['more_info'] */?></a>
-            <?php /*} */?>
-            <?php /*} */?>
-        </div>-->
     </div>
     <div class="clear"></div>
 </div>

@@ -8,6 +8,7 @@
 // | WoWonder - The Ultimate Social Networking Platform
 // | Copyright (c) 2016 WoWonder. All rights reserved.
 // +------------------------------------------------------------------------+
+define('T_ACCEPT_CHALLANGES','wo_challange_accept');
 define('T_USERS','Wo_Users');
 define('T_COUNTRIES', 'Wo_Countries');
 define('T_FOLLOWERS', 'Wo_Followers');
@@ -57,6 +58,7 @@ define('T_FIELDS', 'Wo_ProfileFields');
 define('T_USERS_FIELDS', 'Wo_UserFields');
 define('T_PRODUCTS', 'Wo_Products');
 define('T_CHALLENGES', 'Wo_challenges');
+define('T_CHALLANGE_MEDIA', 'wo_challange_media');
 define('T_PRODUCTS_MEDIA', 'Wo_Products_Media');
 define('T_POLLS', 'Wo_Polls');
 define('T_VOTES', 'Wo_Votes');

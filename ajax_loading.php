@@ -143,6 +143,9 @@ if ($wo['config']['membership_system'] == 1) {
                 case 'post':
                     include('sources/story.php');
                     break;
+                case 'challange':
+                    include('sources/challange_story.php');
+                    break;
                 case 'game':
                     include('sources/game.php');
                     break;
@@ -196,10 +199,19 @@ if ($wo['config']['membership_system'] == 1) {
                     break;  
                 case 'products':
                     include('sources/products.php');
-                    break;   
+                    break;
+                case 'challanges':
+                    include('sources/challanges.php');
+                    break;
+                case 'arena-allchallanges':
+                    include('sources/arena_allchallanges.php');
+                    break;
                 case 'my-products':
                     include('sources/my_products.php');
-                    break;   
+                    break;
+                case 'my-challanges':
+                    include('sources/my_challanges.php');
+                    break;
                     
                 case 'site-pages':
                     include('sources/site_pages.php');
@@ -685,6 +697,9 @@ else{
         case 'post':
             include('sources/story.php');
             break;
+        case 'challange':
+            include('sources/challange_story.php');
+            break;
         case 'game':
             include('sources/game.php');
             break;
@@ -738,10 +753,19 @@ else{
             break;  
         case 'products':
             include('sources/products.php');
-            break;   
+            break;
+        case 'challanges':
+            include('sources/challanges.php');
+            break;
+        case 'arena-allchallanges':
+            include('sources/arena_allchallanges.php');
+            break;
         case 'my-products':
             include('sources/my_products.php');
-            break;    
+            break;
+        case 'my-challanges':
+            include('sources/my_challanges.php');
+            break;
         case 'site-pages':
             include('sources/site_pages.php');
             break;

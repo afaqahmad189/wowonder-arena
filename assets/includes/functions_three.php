@@ -150,6 +150,19 @@ function Wo_RegisterProductMedia($id, $media) {
         return true;
     }
 }
+function Wo_RegisterChallangeMedia($id, $media) {
+    global $wo, $sqlConnect;
+    if (empty($id) or !is_numeric($id) or $id < 1) {
+        return false;
+    }
+    if (empty($media)) {
+        return false;
+    }
+    $query_one = mysqli_query($sqlConnect, "INSERT INTO " . T_CHALLANGE_MEDIA. " (`challange_id`,`image`) VALUES ({$id}, '{$media}')");
+    if ($query_one) {
+        return true;
+    }
+}
 function Wo_IsUrl($uri) {
     if (empty($uri)) {
         return false;
@@ -177,12 +190,131 @@ function Wo_RegisterProduct($registration_data) {
     $fields = '`' . implode('`, `', array_keys($registration_data)) . '`';
     $data   = '\'' . implode('\', \'', $registration_data) . '\'';
     //use T_PRODUCTS in below query for create product
-    $query  = mysqli_query($sqlConnect, "INSERT INTO " . T_CHALLENGES . " ({$fields}) VALUES ({$data})");
+    $query  = mysqli_query($sqlConnect, "INSERT INTO " . T_PRODUCTS . " ({$fields}) VALUES ({$data})");
     if ($query) {
         return mysqli_insert_id($sqlConnect);
     }
     return false;
 }
+
+//afaq
+function Wo_RegisterChallange($registration_data) {
+    global $wo, $sqlConnect;
+    if (empty($registration_data)) {
+        return false;
+    }
+    if (!empty($registration_data['description'])) {
+        $link_regex = '/(http\:\/\/|https\:\/\/|www\.)([^\ ]+)/i';
+        $i          = 0;
+        preg_match_all($link_regex, $registration_data['description'], $matches);
+        foreach ($matches[0] as $match) {
+            $match_url                        = strip_tags($match);
+            $syntax                           = '[a]' . urlencode($match_url) . '[/a]';
+            $registration_data['description'] = str_replace($match, $syntax, $registration_data['description']);
+        }
+    }
+    $fields = '`' . implode('`, `', array_keys($registration_data)) . '`';
+    $data   = '\'' . implode('\', \'', $registration_data) . '\'';
+    //use T_PRODUCTS in below query for create product
+    $user_id=$wo['user']['user_id'];
+                $query  = mysqli_query($sqlConnect, "INSERT INTO " . T_CHALLENGES . " ({$fields}) VALUES ({$data})");
+                if ($query) {
+                 return mysqli_insert_id($sqlConnect);
+                }
+    return false;
+}
+function Wo_GetMyChallanges($filter_data = array()) {
+    global $wo, $sqlConnect;
+    $user_id=$wo['user']['user_id'];
+    $data      = array();
+    $query_one = " SELECT `id`, `user_id` FROM " . T_CHALLENGES . " WHERE user_id='$user_id' and status <> '1'";
+    if (!empty($filter_data['c_id'])) {
+        $category = $filter_data['c_id'];
+        $query_one .= " AND `category` = '{$category}'";
+    }
+//    if (!empty($filter_data['sub_id'])) {
+//        $sub_category = $filter_data['sub_id'];
+//        $query_one .= " AND `sub_category` = '{$sub_category}'";
+//    }
+    if (!empty($filter_data['after_id'])) {
+        if (is_numeric($filter_data['after_id'])) {
+            $after_id = Wo_Secure($filter_data['after_id']);
+            $query_one .= " AND `id` < '{$after_id}' AND `id` <> $after_id";
+        }
+    }
+    if (!empty($filter_data['keyword'])) {
+        $keyword = Wo_Secure($filter_data['keyword']);
+        $query_one .= " AND `name` LIKE '%{$keyword}%'";
+    }
+    if (!empty($filter_data['user_id'])) {
+        $user_id = Wo_Secure($filter_data['user_id']);
+        $query_one .= " AND `user_id` = '{$user_id}'";
+    }
+    if (!empty($filter_data['order_by']) && $filter_data['order_by'] == 'price_low' && !empty($filter_data['price'])) {
+        $price = Wo_Secure($filter_data['price']);
+        $query_one .= " AND `price` >= '{$price}'";
+    }
+    else if (!empty($filter_data['order_by']) && $filter_data['order_by'] == 'price_high' && !empty($filter_data['price'])) {
+
+        $price = Wo_Secure($filter_data['price']);
+        $query_one .= " AND `price` <= '{$price}'";
+    }
+//    if (!empty($filter_data['length'])) {
+//        $user_lat     = $wo['user']['lat'];
+//        $user_lng     = $wo['user']['lng'];
+//        $unit   = 6371;
+//        $query_one = " AND status <> '1'";
+//        $distance = Wo_Secure($filter_data['length']);
+//        if (!empty($filter_data['c_id'])) {
+//            $category = $filter_data['c_id'];
+//            $query_one .= " AND `category` = '{$category}'";
+//        }
+        if (!empty($filter_data['after_id'])) {
+            if (is_numeric($filter_data['after_id'])) {
+                $after_id = Wo_Secure($filter_data['after_id']);
+                $query_one .= " AND `id` < '{$after_id}' AND `id` <> $after_id";
+            }
+        }
+        if (!empty($filter_data['keyword'])) {
+            $keyword = Wo_Secure($filter_data['keyword']);
+            $query_one .= " AND `name` LIKE '%{$keyword}%'";
+        }
+        if (!empty($filter_data['user_id'])) {
+            $user_id = Wo_Secure($filter_data['user_id']);
+            $query_one .= " AND `user_id` = '{$user_id}'";
+        }
+//
+////        $query_one  = "SELECT `id`, `user_id`, ( {$unit} * acos(cos(radians('$user_lat'))  *
+////        cos(radians(lat)) * cos(radians(lng) - radians('$user_lng')) +
+////        sin(radians('$user_lat')) * sin(radians(lat ))) ) AS distance
+////        FROM " . T_PRODUCTS . " WHERE `lat` <> 0 AND `lng` <> 0 $query_one
+////        HAVING distance < '$distance'";
+//    }
+    if (!empty($filter_data['order_by']) && $filter_data['order_by'] == 'price_low') {
+        $query_one .= " ORDER BY `price` ASC";
+    }
+    else if (!empty($filter_data['order_by']) && $filter_data['order_by'] == 'price_high') {
+        $query_one .= " ORDER BY `price` DESC";
+    }
+    else{
+        $query_one .= " ORDER BY `id` DESC";
+    }
+
+    if (!empty($filter_data['limit'])) {
+        if (is_numeric($filter_data['limit'])) {
+            $limit = Wo_Secure($filter_data['limit']);
+            $query_one .= " LIMIT {$limit}";
+        }
+    }
+    $sql = mysqli_query($sqlConnect, $query_one);
+    while ($fetched_data = mysqli_fetch_assoc($sql)) {
+        $products           = Wo_GetChallenges($fetched_data['id']);
+        $products['seller'] = Wo_UserData($fetched_data['user_id']);
+        $data[]             = $products;
+    }
+    return $data;
+}
+//end of afaq
 
 //function Wo_RegisterChallenges($registration_data) {
 //    global $wo, $sqlConnect;
@@ -245,7 +377,7 @@ function Wo_GetProduct($id = 0) {
     return $fetched_data;
 }
 
-function Wo_GetChallenges($id = 0) {
+function Wo_GetChallange($id = 0) {
     global $wo, $sqlConnect;
     $data = array();
     if (empty($id) or !is_numeric($id) or $id < 1) {
@@ -262,7 +394,7 @@ function Wo_GetChallenges($id = 0) {
     $fetched_data['post_id']          = Wo_GetPostIDFromProdcutID($fetched_data['id']);
     $fetched_data['edit_description'] = Wo_EditMarkup(br2nl($fetched_data['description'], true, false, false));
     $fetched_data['description']      = Wo_Markup($fetched_data['description'], true, false, false);
-    $fetched_data['url']              = Wo_SeoLink('index.php?link1=post&id=' . $fetched_data['post_id']);
+    $fetched_data['url']              = Wo_SeoLink('index.php?link1=challange&id=' . $fetched_data['post_id']);
     $fetched_data['product_sub_category'] = '';
     if (!empty($fetched_data['sub_category']) && !empty($wo['products_sub_categories'][$fetched_data['category']])) {
         foreach ($wo['products_sub_categories'][$fetched_data['category']] as $key => $value) {
@@ -280,6 +412,162 @@ function Wo_GetChallenges($id = 0) {
             }
         }
     }
+    return $fetched_data;
+}
+function Wo_FilterChallanges($filter_data = array()) {
+    global $wo, $sqlConnect;
+    $data      = array();
+    $query_one = " SELECT `id`, `user_id` FROM " . T_CHALLENGES . " WHERE status <> '1'";
+    if (!empty($filter_data['c_id'])) {
+        $category = $filter_data['c_id'];
+        $query_one .= " AND `category` = '{$category}'";
+    }
+    if (!empty($filter_data['after_id'])) {
+        if (is_numeric($filter_data['after_id'])) {
+            $after_id = Wo_Secure($filter_data['after_id']);
+            $query_one .= " AND `id` < '{$after_id}' AND `id` <> $after_id";
+        }
+    }
+    if (!empty($filter_data['keyword'])) {
+        $keyword = Wo_Secure($filter_data['keyword']);
+        $query_one .= " AND `name` LIKE '%{$keyword}%'";
+    }
+    if (!empty($filter_data['user_id'])) {
+        $user_id = Wo_Secure($filter_data['user_id']);
+        $query_one .= " AND `user_id` = '{$user_id}'";
+    }
+    if (!empty($filter_data['order_by']) && $filter_data['order_by'] == 'price_low' && !empty($filter_data['price'])) {
+        $price = Wo_Secure($filter_data['price']);
+        $query_one .= " AND `price` >= '{$price}'";
+    }
+    else if (!empty($filter_data['order_by']) && $filter_data['order_by'] == 'price_high' && !empty($filter_data['price'])) {
+
+        $price = Wo_Secure($filter_data['price']);
+        $query_one .= " AND `price` <= '{$price}'";
+    }
+    if (!empty($filter_data['length'])) {
+        $user_lat     = $wo['user']['lat'];
+        $user_lng     = $wo['user']['lng'];
+        $unit   = 6371;
+        $query_one = " AND status <> '1'";
+        $distance = Wo_Secure($filter_data['length']);
+        if (!empty($filter_data['c_id'])) {
+            $category = $filter_data['c_id'];
+            $query_one .= " AND `category` = '{$category}'";
+        }
+        if (!empty($filter_data['after_id'])) {
+            if (is_numeric($filter_data['after_id'])) {
+                $after_id = Wo_Secure($filter_data['after_id']);
+                $query_one .= " AND `id` < '{$after_id}' AND `id` <> $after_id";
+            }
+        }
+        if (!empty($filter_data['keyword'])) {
+            $keyword = Wo_Secure($filter_data['keyword']);
+            $query_one .= " AND `name` LIKE '%{$keyword}%'";
+        }
+        if (!empty($filter_data['user_id'])) {
+            $user_id = Wo_Secure($filter_data['user_id']);
+            $query_one .= " AND `user_id` = '{$user_id}'";
+        }
+    }
+    if (!empty($filter_data['order_by']) && $filter_data['order_by'] == 'price_low') {
+        $query_one .= " ORDER BY `price` ASC";
+    }
+    else if (!empty($filter_data['order_by']) && $filter_data['order_by'] == 'price_high') {
+        $query_one .= " ORDER BY `price` DESC";
+    }
+    else{
+        $query_one .= " ORDER BY `id` DESC";
+    }
+
+    if (!empty($filter_data['limit'])) {
+        if (is_numeric($filter_data['limit'])) {
+            $limit = Wo_Secure($filter_data['limit']);
+            $query_one .= " LIMIT {$limit}";
+        }
+    }
+    $sql = mysqli_query($sqlConnect, $query_one);
+    while ($fetched_data = mysqli_fetch_assoc($sql)) {
+        $products           = Wo_GetChallange($fetched_data['id']);
+        $products['seller'] = Wo_UserData($fetched_data['user_id']);
+        $data[]             = $products;
+    }
+    return $data;
+}
+
+function Wo_GetChallangeData($id = 0) {
+    global $wo, $sqlConnect;
+    $data = array();
+    if (empty($id) or !is_numeric($id) or $id < 1) {
+        return false;
+    }
+    $query_one    = " SELECT * FROM " . T_CHALLENGES . " WHERE `id` = '{$id}' ORDER BY `id` DESC";
+    $sql          = mysqli_query($sqlConnect, $query_one);
+    $fetched_data = mysqli_fetch_assoc($sql);
+    if (empty($fetched_data)) {
+        return array();
+    }
+    $fetched_data['images']           = Wo_GetChallangeImages($fetched_data['id']);
+    $fetched_data['time_text']        = Wo_Time_Elapsed_String($fetched_data['time']);
+    $fetched_data['post_id']          = Wo_GetPostIDFromProdcutID($fetched_data['id']);
+    $fetched_data['edit_description'] = Wo_EditMarkup(br2nl($fetched_data['description'], true, false, false));
+    $fetched_data['description']      = Wo_Markup($fetched_data['description'], true, false, false);
+    $fetched_data['url']              = Wo_SeoLink('index.php?link1=challange&id=' . $fetched_data['post_id']);
+//    $fetched_data['product_sub_category'] = '';
+//    if (!empty($fetched_data['sub_category']) && !empty($wo['products_sub_categories'][$fetched_data['category']])) {
+//        foreach ($wo['products_sub_categories'][$fetched_data['category']] as $key => $value) {
+//            if ($value['id'] == $fetched_data['sub_category']) {
+//                $fetched_data['product_sub_category'] = $value['lang'];
+//            }
+//        }
+//    }
+    $fetched_data['fields'] = array();
+    $fields = Wo_GetCustomFields('product');
+    if (!empty($fields)) {
+        foreach ($fields as $key => $field) {
+            if (in_array($field['fid'], array_keys($fetched_data)) ) {
+                $fetched_data['fields'][$field['fid']] = $fetched_data[$field['fid']];
+            }
+        }
+    }
+    return $fetched_data;
+}
+
+function Wo_GetChallenges($id = 0) {
+    global $wo, $sqlConnect;
+    $data = array();
+    if (empty($id) or !is_numeric($id) or $id < 1) {
+        return false;
+    }
+    $query_one    = " SELECT * FROM " . T_CHALLENGES . " WHERE `id` = '{$id}' ORDER BY `id` DESC";
+    $sql          = mysqli_query($sqlConnect, $query_one);
+    $fetched_data = mysqli_fetch_assoc($sql);
+    if (empty($fetched_data)) {
+        return array();
+    }
+    $fetched_data['images']           = Wo_GetChallangeImages($fetched_data['id']);
+    $fetched_data['time_text']        = Wo_Time_Elapsed_String($fetched_data['time']);
+    $fetched_data['post_id']          = Wo_GetPostIDFromProdcutID($fetched_data['id']);
+    $fetched_data['edit_description'] = Wo_EditMarkup(br2nl($fetched_data['description'], true, false, false));
+    $fetched_data['description']      = Wo_Markup($fetched_data['description'], true, false, false);
+    $fetched_data['url']              = Wo_SeoLink('index.php?link1=challange&id=' . $fetched_data['id']);
+//    $fetched_data['product_sub_category'] = '';
+//    if (!empty($fetched_data['sub_category']) && !empty($wo['products_sub_categories'][$fetched_data['category']])) {
+//        foreach ($wo['products_sub_categories'][$fetched_data['category']] as $key => $value) {
+//            if ($value['id'] == $fetched_data['sub_category']) {
+//                $fetched_data['product_sub_category'] = $value['lang'];
+//            }
+//        }
+//    }
+    $fetched_data['fields'] = array();
+//    $fields = Wo_GetCustomFields('product');
+//    if (!empty($fields)) {
+//        foreach ($fields as $key => $field) {
+//            if (in_array($field['fid'], array_keys($fetched_data)) ) {
+//                $fetched_data['fields'][$field['fid']] = $fetched_data[$field['fid']];
+//            }
+//        }
+//    }
     return $fetched_data;
 }
 
@@ -302,6 +590,22 @@ function Wo_GetProductImages($id = 0) {
     $data      = array();
     $id        = Wo_Secure($id);
     $query_one = "SELECT `id`,`image`,`product_id` FROM " . T_PRODUCTS_MEDIA . " WHERE `product_id` = {$id} ORDER BY `id` DESC";
+    $sql       = mysqli_query($sqlConnect, $query_one);
+    while ($fetched_data = mysqli_fetch_assoc($sql)) {
+        $explode2                  = @end(explode('.', $fetched_data['image']));
+        $explode3                  = @explode('.', $fetched_data['image']);
+        $fetched_data['image_org'] = $explode3[0] . '_small.' . $explode2;
+        $fetched_data['image_org'] = Wo_GetMedia($fetched_data['image_org']);
+        $fetched_data['image']     = Wo_GetMedia($fetched_data['image']);
+        $data[]                    = $fetched_data;
+    }
+    return $data;
+}
+function Wo_GetChallangeImages($id = 0) {
+    global $wo, $sqlConnect;
+    $data      = array();
+    $id        = Wo_Secure($id);
+    $query_one = "SELECT `id`,`challange_id`,`image` FROM " . T_CHALLANGE_MEDIA . " WHERE `challange_id` = {$id} ORDER BY `id` DESC";
     $sql       = mysqli_query($sqlConnect, $query_one);
     while ($fetched_data = mysqli_fetch_assoc($sql)) {
         $explode2                  = @end(explode('.', $fetched_data['image']));
@@ -345,6 +649,45 @@ function Wo_ProductImageData($data = array()) {
         $subquery .= " AND `product_id` = " . $data['product_id'];
     }
     $query_one    = "SELECT * FROM " . T_PRODUCTS_MEDIA . " WHERE $subquery ORDER by `id` {$order_by}";
+    $sql          = mysqli_query($sqlConnect, $query_one);
+    $fetched_data = mysqli_fetch_assoc($sql);
+    if (!empty($fetched_data)) {
+        $fetched_data['image_org'] = Wo_GetMedia($fetched_data['image']);
+    }
+    return $fetched_data;
+}
+function Wo_ChallangeImageData($data = array()) {
+    global $wo, $sqlConnect;
+    if (!empty($data['id'])) {
+        if (is_numeric($data['id'])) {
+            $id = Wo_Secure($data['id']);
+        }
+    }
+    $order_by = '';
+    if (!empty($data['after_image_id']) && is_numeric($data['after_image_id'])) {
+        $data['after_image_id'] = Wo_Secure($data['after_image_id']);
+        $subquery               = " `id` <> " . $data['after_image_id'] . " AND `id` < " . $data['after_image_id'];
+        $order_by               = 'DESC';
+    }
+
+    else if (!empty($data['before_image_id']) && is_numeric($data['before_image_id'])) {
+        $data['before_image_id'] = Wo_Secure($data['before_image_id']);
+        $subquery                = " `id` <> " . $data['before_image_id'] . " AND `id` > " . $data['before_image_id'];
+        $order_by                = 'ASC';
+    }
+
+    else {
+        $subquery = " `id` = '{$id}'";
+    }
+    if (!empty($data['post_id']) && is_numeric($data['post_id'])) {
+        $data['post_id'] = Wo_Secure($data['post_id']);
+        $subquery .= " AND `post_id` = " . $data['post_id'];
+    }
+    if (!empty($data['product_id']) && is_numeric($data['product_id'])) {
+        $data['product_id'] = Wo_Secure($data['product_id']);
+        $subquery .= " AND `product_id` = " . $data['product_id'];
+    }
+    $query_one    = "SELECT * FROM " . T_CHALLANGE_MEDIA . " WHERE $subquery ORDER by `id` {$order_by}";
     $sql          = mysqli_query($sqlConnect, $query_one);
     $fetched_data = mysqli_fetch_assoc($sql);
     if (!empty($fetched_data)) {

@@ -18,25 +18,25 @@
 		if (count($wo['story']['product']['images']) > 3) {
 			foreach (array_slice($wo['story']['product']['images'],0,3) as $key => $photo) {
 				if ($key == 2) {
-					echo "<div onclick='Wo_OpenAlbumLightBox(" . $photo['id'] . ", \"product\");' class='album-collapse pointer'> 
+					echo "<div onclick='Wo_OpenAlbumLightBox(" . $photo['id'] . ", \"product\");' class='album-collapse pointer'>
                        <img src='".($photo['image_org'])."' class='image-file'>
                        <span>+".count(array_slice($wo['story']['product']['images'],2))."</span>
                    </div>
-                   "; 
+                   ";
 				}
 				else{
-					echo  "<img src='" . ($photo['image_org']) ."' alt='image' class='" . $class . " image-file pointer' 
+					echo  "<img src='" . ($photo['image_org']) ."' alt='image' class='" . $class . " image-file pointer'
                   onclick='Wo_OpenAlbumLightBox(" . $photo['id'] . ", \"product\");'>";
 				}
 			}
 			foreach (array_slice($wo['story']['product']['images'],3) as $photo) {
-				echo  "<img src='" . ($photo['image_org']) ."' alt='image' class='" . $class . " image-file pointer hidden' 
+				echo  "<img src='" . ($photo['image_org']) ."' alt='image' class='" . $class . " image-file pointer hidden'
                  onclick='Wo_OpenAlbumLightBox(" . $photo['id'] . ", \"product\");'>";
 			}
 		}
 		else{
 			foreach ($wo['story']['product']['images'] as $photo) {
-				echo  "<img src='" . ($photo['image_org']) ."' alt='image' class='" . $class . " " . $singleimg . " image-file pointer' 
+				echo  "<img src='" . ($photo['image_org']) ."' alt='image' class='" . $class . " " . $singleimg . " image-file pointer'
                  onclick='Wo_OpenAlbumLightBox(" . $photo['id'] . ", \"product\");'>";
 			}
 		}
@@ -58,9 +58,9 @@
 		echo '<div class="wow_post_prod_infos"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z" /></svg><p class="product-description product-description-'.$wo['story']['product']['id'].'">' . $wo['story']['product']['description'] . '</p></div>';
 
 
-		$fields = Wo_GetCustomFields('product'); 
+		$fields = Wo_GetCustomFields('product');
 		if (!empty($fields)) {
-			foreach ($fields as $key => $wo['field']) { 
+			foreach ($fields as $key => $wo['field']) {
 				if (!empty($wo['story']['product']['fid_'.$wo['field']['id']])) {
 					if ($wo['field']['type'] == 'selectbox') {
 						$options = @explode(',', $wo['field']['options']);
@@ -71,15 +71,15 @@
 						}
 					}
 					echo '<div class="wow_post_prod_infos"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z" /></svg><p class="product-description">' . $wo['story']['product']['fid_'.$wo['field']['id']] . '</p></div>';
-		        } 
-		    } 
-	    } 
+		        }
+		    }
+	    }
 
 
 		echo '</div>';
 		if ($wo['loggedin']) { if ($wo['page']  == 'story' && $wo['story']['product']['user_id'] != $wo['user']['user_id']) { ?>
 			<br>
-				<button class="contact btn btn-success btn-mat" onclick="Wo_OpenChatTab(<?php echo $wo['story']['product']['user_id']?>,0,<?php echo $wo['story']['product']['id']?>)"><?php echo $wo['lang']['contact_seller'] ?></button> 
+				<button class="contact btn btn-success btn-mat" onclick="Wo_OpenChatTab(<?php echo $wo['story']['product']['user_id']?>,0,<?php echo $wo['story']['product']['id']?>)"><?php echo $wo['lang']['contact_seller'] ?></button>
 			<?php }}
-	} 
+	}
 ?>

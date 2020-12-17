@@ -4574,6 +4574,7 @@ function Wo_CheckIfUserCanRegister($num = 10) {
     }
 }
 function Wo_RegisterPost($re_data = array('recipient_id' => 0)) {
+
     global $wo, $sqlConnect;
     $is_there_video = false;
     $playtube_root  = preg_quote($wo['config']['playtube_url']);
@@ -4824,9 +4825,9 @@ function Wo_RegisterPost($re_data = array('recipient_id' => 0)) {
             $re_data['user_id'] = 0;
         }
     }
-    $fields  = '`' . implode('`, `', array_keys($re_data)) . '`';
+     $fields  = '`' . implode('`, `', array_keys($re_data)) . '`';
     $data    = '\'' . implode('\', \'', $re_data) . '\'';
-    $query   = mysqli_query($sqlConnect, "INSERT INTO " . T_POSTS . " ({$fields}) VALUES ({$data})");
+     $query   = mysqli_query($sqlConnect, "INSERT INTO " . T_POSTS . " ({$fields}) VALUES ({$data})");
     $post_id = mysqli_insert_id($sqlConnect);
     if ($query) {
         mysqli_query($sqlConnect, "UPDATE " . T_POSTS . " SET `post_id` = {$post_id} WHERE `id` = {$post_id}");
@@ -4862,6 +4863,7 @@ function Wo_RegisterPost($re_data = array('recipient_id' => 0)) {
         return $post_id;
     }
 }
+
 function Wo_GetHashtag($tag = '', $type = true) {
     global $sqlConnect;
     $create = false;
@@ -5223,6 +5225,671 @@ function Wo_PostData($post_id, $placement = '', $limited = '',$comments_limit = 
     
     return $story;
 }
+function Wo_PostDataChallange($post_id, $placement = '', $limited = '',$comments_limit = 0) {
+    global $wo, $sqlConnect, $cache,$db;
+    if (empty($post_id) || !is_numeric($post_id) || $post_id < 0) {
+        return false;
+    }
+    $data           = array();
+    $post_id        = Wo_Secure($post_id);
+    $query_one      = "SELECT * FROM " . T_POSTS . " WHERE `id` = {$post_id}";
+    if ($wo['config']['post_approval'] == 1 && !Wo_IsAdmin()) {
+        $query_one .= " AND `active` = '1' ";
+    }
+    $hashed_post_Id = md5($post_id);
+    if ($wo['config']['cacheSystem'] == 1) {
+        $fetched_data = $cache->read($hashed_post_Id . '_P_Data.tmp');
+        if (empty($fetched_data)) {
+            $sql_query_one = mysqli_query($sqlConnect, $query_one);
+            $fetched_data  = mysqli_fetch_assoc($sql_query_one);
+            $cache->write($hashed_post_Id . '_P_Data.tmp', $fetched_data);
+        }
+    } else {
+        $sql_query_one = mysqli_query($sqlConnect, $query_one);
+        $fetched_data  = mysqli_fetch_assoc($sql_query_one);
+    }
+    if (empty($fetched_data['id'])) {
+        return false;
+    }
+    if (!empty($fetched_data['page_id'])) {
+        if (empty($fetched_data['user_id'])) {
+            $fetched_data['publisher'] = Wo_PageData($fetched_data['page_id']);
+            $fetched_data['page_info'] = array();
+        }
+        else{
+            $fetched_data['publisher'] = Wo_UserData($fetched_data['user_id']);
+            $fetched_data['page_info'] = Wo_PageData($fetched_data['page_id']);
+        }
+
+    } else {
+        $fetched_data['publisher'] = Wo_UserData($fetched_data['user_id']);
+    }
+    if ($fetched_data['id'] == $fetched_data['post_id']) {
+        $story = $fetched_data;
+    } else {
+        $query_two     = "SELECT * FROM " . T_POSTS . " WHERE `id` = " . $fetched_data['post_id'];
+        $sql_query_two = mysqli_query($sqlConnect, $query_two);
+        if (mysqli_num_rows($sql_query_two) != 1) {
+            return false;
+        }
+        $sql_fetch_two = mysqli_fetch_assoc($sql_query_two);
+        $story         = $sql_fetch_two;
+        if (!empty($story['page_id'])) {
+            $story['publisher'] = Wo_PageData($story['page_id']);
+        } else {
+            $story['publisher'] = Wo_UserData($story['user_id']);
+        }
+    }
+    $story['limit_comments']   = 3;
+    $story['limited_comments'] = false;
+    if ($limited == 'not_limited') {
+        $story['limit_comments']   = 10000;
+        $story['limited_comments'] = false;
+    }
+    if (!empty($limited) && is_numeric($limited) && $limited > 0) {
+        $story['limit_comments']   = Wo_Secure($limited);
+        $story['limited_comments'] = false;
+    }
+    $story['is_group_post']          = false;
+    $story['group_recipient_exists'] = false;
+    $story['group_admin']            = false;
+    if ($placement != 'admin') {
+        if (!empty($story['group_id'])) {
+            if ($wo['config']['groups'] == 0) {
+                return false;
+            }
+            $story['group_recipient_exists'] = true;
+            $story['group_recipient']        = Wo_GroupData($story['group_id']);
+            if ($story['group_recipient']['privacy'] == 2) {
+                if ($wo['loggedin'] == true) {
+                    if ($story['publisher']['user_id'] != $wo['user']['user_id']) {
+                        if (Wo_IsGroupOnwer($story['group_id']) === false) {
+                            if (Wo_IsGroupJoined($story['group_id']) === false && (!Wo_IsAdmin() || Wo_IsModerator())) {
+                                return false;
+                            }
+                        }
+                    }
+                } else {
+                    return false;
+                }
+            }
+            if (Wo_IsGroupOnwer($story['group_id']) === false) {
+                $story['is_group_post'] = true;
+            } else {
+                $story['group_admin'] = true;
+            }
+        }
+        if ($story['postPrivacy'] == 1) {
+            if ($wo['loggedin'] == true) {
+                if (!empty($story['publisher']['page_id'])) {
+                } else {
+                    if ($story['publisher']['user_id'] != $wo['user']['user_id']) {
+                        if (Wo_IsFollowing($wo['user']['user_id'], $story['publisher']['user_id']) === false) {
+                            return false;
+                        }
+                    }
+                }
+            } else {
+                return false;
+            }
+        }
+        if ($story['postPrivacy'] == 2) {
+            if ($wo['loggedin'] == true) {
+                if (!empty($story['publisher']['page_id'])) {
+                    if ($story['publisher']['user_id'] != $wo['user']['user_id']) {
+                        if (Wo_IsPageLiked($story['publisher']['page_id'], $wo['user']['user_id']) === false) {
+                            return false;
+                        }
+                    }
+                } else {
+                    if ($story['publisher']['user_id'] != $wo['user']['user_id']) {
+                        if (Wo_IsFollowing($story['publisher']['user_id'], $wo['user']['user_id']) === false && empty($story['group_id'])) {
+                            return false;
+                        }
+                    }
+                }
+            } else {
+                return false;
+            }
+        }
+        if ($story['postPrivacy'] == 3) {
+            if ($wo['loggedin'] == true) {
+                if (!empty($story['publisher']['page_id'])) {
+                } else {
+                    if ($wo['user']['user_id'] != $story['publisher']['user_id']) {
+                        return false;
+                    }
+                }
+            } else {
+                return false;
+            }
+        }
+    }
+    $story['post_is_promoted'] = 0;
+    $story['postText_API'] = Wo_MarkupAPI($story['postText'],true,true,true,$story['post_id']);
+    $story['postText_API'] = Wo_Emo($story['postText_API']);
+    $story['Orginaltext']  = Wo_EditMarkup($story['postText'],true,true,true,$story['post_id']);
+    $story['Orginaltext']  = str_replace('<br>', "\n", $story['Orginaltext']);
+    $story['postText']     = Wo_Emo($story['postText']);
+    $story['postText']     = Wo_Markup($story['postText'],true,true,true,$story['post_id']);
+    $story['post_time']    = Wo_Time_Elapsed_String($story['time']);
+    $story['page']         = 0;
+    if (!empty($story['postFeeling'])) {
+        $story['postFeelingIcon'] = $wo['feelingIcons'][$story['postFeeling']];
+    }
+    if (isset($story['Orginaltext']) && !empty($story['Orginaltext']) && $wo['config']['useSeoFrindly'] == 1) {
+        $story['url'] = Wo_SeoLink('index.php?link1=challange&id=' . $story['id']) . '_' . Wo_SlugPost($story['Orginaltext']);
+    } else {
+        $story['url'] = Wo_SeoLink('index.php?link1=challange&id=' . $story['id']);
+    }
+    $story['via_type'] = '';
+    if ($story['id'] != $fetched_data['id'] && $story['user_id'] != $fetched_data['user_id']) {
+        $story['via_type'] = 'share';
+        $story['via']      = $fetched_data['publisher'];
+    }
+    $story['recipient_exists'] = false;
+    $story['recipient']        = '';
+    if ($story['recipient_id'] > 0) {
+        $story['recipient_exists'] = true;
+        $story['recipient']        = Wo_UserData($story['recipient_id']);
+    }
+    $story['admin'] = false;
+    if ($wo['loggedin'] == true) {
+        if (!empty($story['page_id'])) {
+            if (Wo_IsPageOnwer($story['page_id'])) {
+                $story['admin'] = true;
+            }
+        } else {
+            if ($story['publisher']['user_id'] == $wo['user']['user_id']) {
+                $story['admin'] = true;
+            }
+        }
+        if ($story['recipient_exists'] == true) {
+            if ($story['recipient']['user_id'] == $wo['user']['user_id']) {
+                $story['admin'] = true;
+            }
+        }
+    }
+    if (!empty($story['page_id'])) {
+        if ($wo['config']['pages'] == 0) {
+            return false;
+        }
+    }
+    $story['post_share']        = 0;
+    $story['is_post_saved']     = false;
+    $story['is_post_reported']  = false;
+    $story['is_post_boosted']   = 0;
+    $story['is_liked']          = false;
+    $story['is_wondered']       = false;
+    $story['post_comments']     = 0;
+    $story['post_shares']       = 0;
+    $story['post_likes']        = 0;
+    $story['post_wonders']      = 0;
+    $story['postLinkImage']     = Wo_GetMedia($story['postLinkImage']);
+    $story['is_post_pinned']    = (Wo_IsPostPinned($story['id']) === true) ? true : false;
+    if (!empty($comments_limit) && $comments_limit > 0) {
+        $story['get_post_comments'] = Wo_GetPostCommentsLimited($story['id'], $comments_limit);
+    }
+    else{
+        $story['get_post_comments'] = ($story['comments_status'] == 1) ? Wo_GetPostComments($story['id'], $story['limit_comments']) : array();
+    }
+
+    $story['photo_album']       = array();
+    if (!empty($story['album_name'])) {
+        $parent_id            = ($story['parent_id'] > 0) ? $story['parent_id'] : $story['id'];
+        $story['photo_album'] = Wo_GetAlbumPhotos($parent_id);
+    }
+    if ($story['boosted'] == 1) {
+        $story['is_post_boosted'] = 1;
+    }
+    if ($story['multi_image'] == 1) {
+        $parent_id            = ($story['parent_id'] > 0) ? $story['parent_id'] : $story['id'];
+        $story['photo_multi'] = Wo_GetAlbumPhotos($parent_id);
+    }
+    if ($story['product_id'] > 0) {
+        $story['product'] = Wo_GetChallangeData($story['product_id']);
+    }
+    if ($story['page_event_id'] > 0) {
+        $story['event'] = Wo_EventData($story['page_event_id']);
+    }
+    if ($story['event_id'] > 0) {
+        $story['event'] = Wo_EventData($story['event_id']);
+    }
+    $story['options'] = array();
+    $story['voted_id'] = 0;
+    if ($story['poll_id'] == 1) {
+        $options = Ju_GetPercentageOfOptionPost($story['id']);
+        if (!empty($options)) {
+            $story['options'] = $options;
+        }
+        if ($wo['loggedin']) {
+            $option = $db->where('post_id',$post_id)->where('user_id',$wo['user']['id'])->getOne(T_VOTES,'option_id');
+            $story['voted_id'] = $option->option_id;
+        }
+
+
+    }
+    if ($wo['loggedin'] == true) {
+        $story['post_share']       = Wo_CountPostShare($story['id']);
+        $story['post_comments']    = Wo_CountPostComment($story['id']);
+        $story['post_shares']      = Wo_CountShares($story['id']);
+        $story['post_likes']       = Wo_CountLikes($story['id']);
+        $story['post_wonders']     = Wo_CountWonders($story['id']);
+        $story['is_liked']         = (Wo_IsLiked($story['id'], $wo['user']['user_id']) === true) ? true : false;
+        $story['is_wondered']      = (Wo_IsWondered($story['id'], $wo['user']['user_id']) === true) ? true : false;
+        $story['is_post_saved']    = (Wo_IsPostSaved($story['id'], $wo['user']['user_id']) === true) ? true : false;
+        $story['is_post_reported'] = (Wo_IsPostRepotred($story['id'], $wo['user']['user_id']) === true) ? true : false;
+        if (Wo_IsBlocked($story['user_id']) || Wo_IsBlocked($story['recipient_id'])) {
+            if (empty($story['group_id'])) {
+                return false;
+            }
+        }
+    }
+    $story['postFile_full'] = '';
+    $story['shared_from']   = ($story['shared_from'] > 0) ? Wo_UserData($story['shared_from']) : false;
+    if (!empty($story['postFile'])) {
+        $story['postFile_full'] = Wo_GetMedia($story['postFile']);
+    }
+    if (!empty($story['postPhoto'])) {
+        $story['postPhoto'] = Wo_GetMedia($story['postPhoto']);
+    }
+    if (!empty($story['blog_id'])) {
+        $story['blog'] = Wo_GetArticle($story['blog_id']);
+    }
+
+    if ($wo['config']['second_post_button'] == 'reaction') {
+        $story['reaction'] = Wo_GetPostReactionsTypes($story['id']);
+    }
+    $story['job'] = array();
+    if (!empty($story['job_id'])) {
+        $story['job'] = Wo_GetJobById($story['job_id']);
+    }
+    $story['offer'] = array();
+    if (!empty($story['offer_id'])) {
+        $story['offer'] = Wo_GetOfferById($story['offer_id']);
+    }
+    $story['fund'] = array();
+    if (!empty($story['fund_raise_id'])) {
+        $story['fund'] = GetFundByRaiseId($story['fund_raise_id'],$story['user_id']);
+        unset($story['fund']['user_data']);
+    }
+    $story['fund_data'] = array();
+    if (!empty($story['fund_id'])) {
+        $story['fund_data'] = GetFundingById($story['fund_id']);
+        unset($story['fund_data']['user_data']);
+    }
+    $story['forum'] = array();
+    if (!empty($story['forum_id'])) {
+        $forum = Wo_GetForumInfo($story['forum_id']);
+        if (!empty($forum) && !empty($forum['forum'])) {
+            if (strlen($forum['forum']['description']) > 200) {
+                $forum['forum']['description'] = substr($forum['forum']['description'], 0,200).'...';
+            }
+            $story['forum'] = $forum['forum'];
+        }
+    }
+    $story['thread'] = array();
+    if (!empty($story['thread_id'])) {
+        $thread = Wo_GetForumThreads(array("id" => $story['thread_id'], "preview" => true));
+        if (!empty($thread) && !empty($thread[0])) {
+            if (strlen($thread[0]['orginal_headline']) > 200) {
+                $thread[0]['orginal_headline'] = substr($thread[0]['orginal_headline'], 0,200).'...';
+            }
+            $story['thread'] = $thread[0];
+        }
+    }
+    $story['is_still_live'] = false;
+    $story['live_sub_users'] = 0;
+    if (!empty($story['stream_name']) && !empty($story['live_time']) && $story['live_time'] >= (time() - 10) && $story['live_ended'] == 0) {
+        $story['is_still_live'] = true;
+        $story['live_sub_users'] = $db->where('post_id',$story['id'])->where('time',time()-6,'>=')->getValue(T_LIVE_SUB,'COUNT(*)');
+    }
+
+    return $story;
+}
+function Wo_ChallangeData($post_id, $placement = '', $limited = '',$comments_limit = 0) {
+    global $wo, $sqlConnect, $cache,$db;
+    if (empty($post_id) || !is_numeric($post_id) || $post_id < 0) {
+        return false;
+    }
+    $data           = array();
+    $post_id        = Wo_Secure($post_id);
+    $query_one      = "SELECT * FROM " . T_CHALLENGES . " WHERE `id` = {$post_id}";
+    if ($wo['config']['post_approval'] == 1 && !Wo_IsAdmin()) {
+        $query_one .= " AND `active` = '1' ";
+
+    }
+    $hashed_post_Id = md5($post_id);
+    if ($wo['config']['cacheSystem'] == 1) {
+        $fetched_data = $cache->read($hashed_post_Id . '_P_Data.tmp');
+        if (empty($fetched_data)) {
+            $sql_query_one = mysqli_query($sqlConnect, $query_one);
+            $fetched_data  = mysqli_fetch_assoc($sql_query_one);
+            $cache->write($hashed_post_Id . '_P_Data.tmp', $fetched_data);
+        }
+    }
+    else {
+        $sql_query_one = mysqli_query($sqlConnect, $query_one);
+        $fetched_data  = mysqli_fetch_assoc($sql_query_one);
+
+    }
+    if (empty($fetched_data['id'])) {
+        return false;
+    }
+    if (!empty($fetched_data['page_id'])) {
+
+
+        if (empty($fetched_data['user_id'])) {
+            $fetched_data['publisher'] = Wo_PageData($fetched_data['page_id']);
+            $fetched_data['page_info'] = array();
+        }
+        else{
+            $fetched_data['publisher'] = Wo_UserData($fetched_data['user_id']);
+            $fetched_data['page_info'] = Wo_PageData($fetched_data['page_id']);
+        }
+
+    }
+    else {
+        $fetched_data['publisher'] = Wo_UserData($fetched_data['user_id']);
+    }
+    if ($fetched_data['id'] == $fetched_data['post_id']) {
+
+        $story = $fetched_data;
+    }
+    else {
+        $query_two     = "SELECT * FROM " . T_CHALLENGES . " WHERE `id` = $post_id";
+        $sql_query_two = mysqli_query($sqlConnect, $query_two);
+        if (mysqli_num_rows($sql_query_two) != 1) {
+
+            return false;
+        }
+        $sql_fetch_two = mysqli_fetch_assoc($sql_query_two);
+        $story         = $sql_fetch_two;
+
+        if (!empty($story['page_id'])) {
+            $story['publisher'] = Wo_PageData($story['page_id']);
+        } else {
+          $story['publisher'] = Wo_UserData($story['user_id']);
+        }
+    }
+    $story['limit_comments']   = 3;
+    $story['limited_comments'] = false;
+    if ($limited == 'not_limited') {
+        $story['limit_comments']   = 10000;
+        $story['limited_comments'] = false;
+    }
+    if (!empty($limited) && is_numeric($limited) && $limited > 0) {
+        $story['limit_comments']   = Wo_Secure($limited);
+        $story['limited_comments'] = false;
+    }
+    $story['is_group_post']          = false;
+    $story['group_recipient_exists'] = false;
+    $story['group_admin']            = false;
+    if ($placement != 'admin') {
+        if (!empty($story['group_id'])) {
+            if ($wo['config']['groups'] == 0) {
+                return false;
+            }
+
+            $story['group_recipient_exists'] = true;
+            $story['group_recipient']        = Wo_GroupData($story['group_id']);
+            if ($story['group_recipient']['privacy'] == 2) {
+                if ($wo['loggedin'] == true) {
+                    if ($story['publisher']['user_id'] != $wo['user']['user_id']) {
+                        if (Wo_IsGroupOnwer($story['group_id']) === false) {
+                            if (Wo_IsGroupJoined($story['group_id']) === false && (!Wo_IsAdmin() || Wo_IsModerator())) {
+                                return false;
+                            }
+                        }
+                    }
+                } else {
+                    return false;
+                }
+            }
+            if (Wo_IsGroupOnwer($story['group_id']) === false) {
+                $story['is_group_post'] = true;
+            } else {
+                $story['group_admin'] = true;
+            }
+        }
+        if ($story['postPrivacy'] == 1) {
+            if ($wo['loggedin'] == true) {
+                if (!empty($story['publisher']['page_id'])) {
+                } else {
+                    if ($story['publisher']['user_id'] != $wo['user']['user_id']) {
+                        if (Wo_IsFollowing($wo['user']['user_id'], $story['publisher']['user_id']) === false) {
+                            return false;
+                        }
+                    }
+                }
+            } else {
+                return false;
+            }
+        }
+        if ($story['postPrivacy'] == 2) {
+            if ($wo['loggedin'] == true) {
+                if (!empty($story['publisher']['page_id'])) {
+                    if ($story['publisher']['user_id'] != $wo['user']['user_id']) {
+                        if (Wo_IsPageLiked($story['publisher']['page_id'], $wo['user']['user_id']) === false) {
+                            return false;
+                        }
+                    }
+                } else {
+                    if ($story['publisher']['user_id'] != $wo['user']['user_id']) {
+                        if (Wo_IsFollowing($story['publisher']['user_id'], $wo['user']['user_id']) === false && empty($story['group_id'])) {
+                            return false;
+                        }
+                    }
+                }
+            } else {
+                return false;
+            }
+        }
+        if ($story['postPrivacy'] == 3) {
+            if ($wo['loggedin'] == true) {
+                if (!empty($story['publisher']['page_id'])) {
+                } else {
+                    if ($wo['user']['user_id'] != $story['publisher']['user_id']) {
+                        return false;
+                    }
+                }
+            } else {
+                return false;
+            }
+        }
+    }
+
+    $story['post_is_promoted'] = 0;
+    $story['postText_API'] = Wo_MarkupAPI($story['postText'],true,true,true,$story['post_id']);
+    $story['postText_API'] = Wo_Emo($story['postText_API']);
+    $story['Orginaltext']  = Wo_EditMarkup($story['postText'],true,true,true,$story['post_id']);
+    $story['Orginaltext']  = str_replace('<br>', "\n", $story['Orginaltext']);
+    $story['postText']     = Wo_Emo($story['postText']);
+    $story['postText']     = Wo_Markup($story['postText'],true,true,true,$story['post_id']);
+    $story['post_time']    = Wo_Time_Elapsed_String($story['time']);
+    $story['page']         = 0;
+    if (!empty($story['postFeeling'])) {
+        $story['postFeelingIcon'] = $wo['feelingIcons'][$story['postFeeling']];
+    }
+    if (isset($story['Orginaltext']) && !empty($story['Orginaltext']) && $wo['config']['useSeoFrindly'] == 1) {
+        $story['url'] = Wo_SeoLink('index.php?link1=challange&id=' . $story['id']) . '_' . Wo_SlugPost($story['Orginaltext']);
+    } else {
+        $story['url'] = Wo_SeoLink('index.php?link1=challange&id=' . $story['id']);
+
+    }
+    $story['via_type'] = '';
+    if ($story['id'] != $fetched_data['id'] && $story['user_id'] != $fetched_data['user_id']) {
+        $story['via_type'] = 'share';
+        $story['via']      = $fetched_data['publisher'];
+    }
+    $story['recipient_exists'] = false;
+    $story['recipient']        = '';
+    if ($story['recipient_id'] > 0) {
+        $story['recipient_exists'] = true;
+        $story['recipient']        = Wo_UserData($story['recipient_id']);
+    }
+    $story['admin'] = false;
+    if ($wo['loggedin'] == true) {
+        if (!empty($story['page_id'])) {
+            if (Wo_IsPageOnwer($story['page_id'])) {
+                $story['admin'] = true;
+            }
+        } else {
+            if ($story['publisher']['user_id'] == $wo['user']['user_id']) {
+                $story['admin'] = true;
+            }
+        }
+        if ($story['recipient_exists'] == true) {
+            if ($story['recipient']['user_id'] == $wo['user']['user_id']) {
+                $story['admin'] = true;
+            }
+        }
+
+    }
+    if (!empty($story['page_id'])) {
+        if ($wo['config']['pages'] == 0) {
+            return false;
+        }
+    }
+
+    $story['post_share']        = 0;
+    $story['is_post_saved']     = false;
+    $story['is_post_reported']  = false;
+    $story['is_post_boosted']   = 0;
+    $story['is_liked']          = false;
+    $story['is_wondered']       = false;
+    $story['post_comments']     = 0;
+    $story['post_shares']       = 0;
+    $story['post_likes']        = 0;
+    $story['post_wonders']      = 0;
+    $story['postLinkImage']     = Wo_GetMedia($story['postLinkImage']);
+    $story['is_post_pinned']    = (Wo_IsPostPinned($story['id']) === true) ? true : false;
+    if (!empty($comments_limit) && $comments_limit > 0) {
+        $story['get_post_comments'] = Wo_GetPostCommentsLimited($story['id'], $comments_limit);
+    }
+
+    else{
+        $story['get_post_comments'] = ($story['comments_status'] == 1) ? Wo_GetPostComments($story['id'], $story['limit_comments']) : array();
+    }
+//    echo"here1";die();
+
+    $story['photo_album']       = array();
+    if (!empty($story['album_name'])) {
+        $parent_id            = ($story['parent_id'] > 0) ? $story['parent_id'] : $story['id'];
+        $story['photo_album'] = Wo_GetAlbumPhotos($parent_id);
+    }
+
+    if ($story['boosted'] == 1) {
+        $story['is_post_boosted'] = 1;
+    }
+    if ($story['multi_image'] == 1) {
+        $parent_id            = ($story['parent_id'] > 0) ? $story['parent_id'] : $story['id'];
+        $story['photo_multi'] = Wo_GetAlbumPhotos($parent_id);
+    }
+
+    if ($story['product_id'] > 0) {
+        $story['product'] = Wo_GetProduct($story['product_id']);
+    }
+    if ($story['page_event_id'] > 0) {
+        $story['event'] = Wo_EventData($story['page_event_id']);
+    }
+
+    if ($story['event_id'] > 0) {
+        $story['event'] = Wo_EventData($story['event_id']);
+    }
+
+    $story['options'] = array();
+    $story['voted_id'] = 0;
+    if ($story['poll_id'] == 1) {
+        $options = Ju_GetPercentageOfOptionPost($story['id']);
+        if (!empty($options)) {
+            $story['options'] = $options;
+        }
+        if ($wo['loggedin']) {
+            $option = $db->where('post_id',$post_id)->where('user_id',$wo['user']['id'])->getOne(T_VOTES,'option_id');
+            $story['voted_id'] = $option->option_id;
+        }
+
+
+    }
+
+    if ($wo['loggedin'] == true) {
+        $story['post_share']       = Wo_CountPostShare($story['id']);
+        $story['post_comments']    = Wo_CountPostComment($story['id']);
+        $story['post_shares']      = Wo_CountShares($story['id']);
+        $story['post_likes']       = Wo_CountLikes($story['id']);
+        $story['post_wonders']     = Wo_CountWonders($story['id']);
+        $story['is_liked']         = (Wo_IsLiked($story['id'], $wo['user']['user_id']) === true) ? true : false;
+        $story['is_wondered']      = (Wo_IsWondered($story['id'], $wo['user']['user_id']) === true) ? true : false;
+        $story['is_post_saved']    = (Wo_IsPostSaved($story['id'], $wo['user']['user_id']) === true) ? true : false;
+        $story['is_post_reported'] = (Wo_IsPostRepotred($story['id'], $wo['user']['user_id']) === true) ? true : false;
+        if (Wo_IsBlocked($story['user_id']) || Wo_IsBlocked($story['recipient_id'])) {
+            if (empty($story['group_id'])) {
+                return false;
+            }
+        }
+    }
+    $story['postFile_full'] = '';
+    $story['shared_from']   = ($story['shared_from'] > 0) ? Wo_UserData($story['shared_from']) : false;
+    if (!empty($story['postFile'])) {
+        $story['postFile_full'] = Wo_GetMedia($story['postFile']);
+    }
+    if (!empty($story['postPhoto'])) {
+        $story['postPhoto'] = Wo_GetMedia($story['postPhoto']);
+    }
+    if (!empty($story['blog_id'])) {
+        $story['blog'] = Wo_GetArticle($story['blog_id']);
+    }
+
+    if ($wo['config']['second_post_button'] == 'reaction') {
+        $story['reaction'] = Wo_GetPostReactionsTypes($story['id']);
+    }
+    $story['job'] = array();
+    if (!empty($story['job_id'])) {
+        $story['job'] = Wo_GetJobById($story['job_id']);
+    }
+    $story['offer'] = array();
+    if (!empty($story['offer_id'])) {
+        $story['offer'] = Wo_GetOfferById($story['offer_id']);
+    }
+    $story['fund'] = array();
+    if (!empty($story['fund_raise_id'])) {
+        $story['fund'] = GetFundByRaiseId($story['fund_raise_id'],$story['user_id']);
+        unset($story['fund']['user_data']);
+    }
+    $story['fund_data'] = array();
+    if (!empty($story['fund_id'])) {
+        $story['fund_data'] = GetFundingById($story['fund_id']);
+        unset($story['fund_data']['user_data']);
+    }
+    $story['forum'] = array();
+    if (!empty($story['forum_id'])) {
+        $forum = Wo_GetForumInfo($story['forum_id']);
+        if (!empty($forum) && !empty($forum['forum'])) {
+            if (strlen($forum['forum']['description']) > 200) {
+                $forum['forum']['description'] = substr($forum['forum']['description'], 0,200).'...';
+            }
+            $story['forum'] = $forum['forum'];
+        }
+    }
+    $story['thread'] = array();
+    if (!empty($story['thread_id'])) {
+        $thread = Wo_GetForumThreads(array("id" => $story['thread_id'], "preview" => true));
+        if (!empty($thread) && !empty($thread[0])) {
+            if (strlen($thread[0]['orginal_headline']) > 200) {
+                $thread[0]['orginal_headline'] = substr($thread[0]['orginal_headline'], 0,200).'...';
+            }
+            $story['thread'] = $thread[0];
+        }
+    }
+    $story['is_still_live'] = false;
+    $story['live_sub_users'] = 0;
+    if (!empty($story['stream_name']) && !empty($story['live_time']) && $story['live_time'] >= (time() - 10) && $story['live_ended'] == 0) {
+        $story['is_still_live'] = true;
+        $story['live_sub_users'] = $db->where('post_id',$story['id'])->where('time',time()-6,'>=')->getValue(T_LIVE_SUB,'COUNT(*)');
+    }
+    return $story;
+}
 function Wo_CountPostShare($post_id) {
     global $wo, $sqlConnect;
     $data = array();
@@ -5252,6 +5919,15 @@ function Wo_PostExists($post_id) {
     }
     $post_id = Wo_Secure($post_id);
     $query   = mysqli_query($sqlConnect, "SELECT COUNT(`id`) FROM " . T_POSTS . " WHERE `id` = {$post_id}");
+    return (Wo_Sql_Result($query, 0) == 1) ? true : false;
+}
+function Wo_ChallangeExists($post_id) {
+    global $sqlConnect;
+    if (empty($post_id) || !is_numeric($post_id) || $post_id < 0) {
+        return false;
+    }
+    $post_id = Wo_Secure($post_id);
+    $query   = mysqli_query($sqlConnect, "SELECT COUNT(`id`) FROM " . T_CHALLENGES . " WHERE `id` = {$post_id}");
     return (Wo_Sql_Result($query, 0) == 1) ? true : false;
 }
 function Wo_IsPostOnwer($post_id, $user_id) {

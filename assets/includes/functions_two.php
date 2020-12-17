@@ -3163,6 +3163,55 @@ function Wo_BanNewIp($ip) {
         return true;
     }
 }
+
+function Accept_Challange($acceptor_id,$creator_id,$challange_id) {
+    global $sqlConnect;
+    $query=mysqli_query($sqlConnect,"SELECT * from ". T_USERS ." A JOIN ". wo_challenges ." B
+     ON A.user_id=B.user_id
+     where A.user_id=$creator_id and B.id=$challange_id");
+    if(mysqli_num_rows($query)){
+        $row=mysqli_fetch_assoc($query);
+        $wallet=$row['wallet'];
+        $challange_price=$row['price'];
+        $remianing_price=$wallet-$challange_price;
+        if($wallet<$challange_price){
+            return "no_wallet";
+        }
+        else{
+            $query_four=mysqli_query($sqlConnect,"SELECT * from ". T_ACCEPT_CHALLANGES ." where challange_id=$challange_id");
+            if($count=mysqli_num_rows($query_four)){
+               if($count<5){
+                   $query_one = mysqli_query($sqlConnect, "INSERT INTO " . T_ACCEPT_CHALLANGES . " (`challange_creator`,`challange_acceptor`,`challange_id`) 
+                    VALUES ('{$acceptor_id}','{$creator_id}','{$challange_id}')");
+                   if ($query_one) {
+                       $query_three=mysqli_query($sqlConnect,"UPDATE ". T_USERS ." set wallet=$remianing_price
+                        where user_id=$creator_id");
+                       return "accepted";
+                   }
+                   else{
+                       return "error";
+                   }
+               }
+               else{
+                   return "challange_limit_reach";
+               }
+            }
+            else{
+                $query_one = mysqli_query($sqlConnect, "INSERT INTO " . T_ACCEPT_CHALLANGES . " (`challange_creator`,`challange_acceptor`,`challange_id`) 
+                    VALUES ('{$acceptor_id}','{$creator_id}','{$challange_id}')");
+                if ($query_one) {
+                    $query_three=mysqli_query($sqlConnect,"UPDATE ". T_USERS ." set wallet=$remianing_price
+                        where user_id=$creator_id");
+                    return "accepted";
+                }
+                else{
+                    return "error";
+                }
+            }
+        }
+    }
+}
+
 function Wo_IsIpBanned($id) {
     global $sqlConnect;
     $id           = Wo_Secure($id);
