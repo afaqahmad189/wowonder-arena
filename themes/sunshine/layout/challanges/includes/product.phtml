@@ -34,7 +34,7 @@
                  onclick='Wo_OpenAlbumLightBoxChallange(" . $photo['id'] . ", \"product\");'>";
 			}
 		}
-		else{
+		else{ 
 			foreach ($wo['story']['product']['images'] as $photo) {
 				echo  "<img src='" . ($photo['image_org']) ."' alt='image' class='" . $class . " " . $singleimg . " image-file pointer'
                  onclick='Wo_OpenAlbumLightBoxChallange(" . $photo['id'] . ", \"product\");'>";
@@ -53,12 +53,12 @@
 
 		echo '<div style="display:none;width: 100p%;height: 70px;background-color: black;border-radius: 10px;padding-top: 10px" align="center" id="timer">
 		<p id="demo" style="font-size: 32px;color: white;"></p></div>
-		<div class="row"> <div class="wow_post_prod_infos "><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z" /></svg><p class="product-description product-description-'.$wo['story']['product']['id'].'">' . $wo['story']['product']['description'] . '</p></div></div>';
+		<div class="row"> <div class="wow_post_prod_infos "><svg style="float:left; margin-right:10px;" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z" /></svg><p class="product-description product-description-'.$wo['story']['product']['id'].'">' . $wo['story']['product']['description'] . '</p></div></div>';
 
 		echo'<div class="row"> ';
 		echo '<div align="center"class="wow_post_prod_infos col-md-4"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><b>' . $wo['lang']['category'] . '</b><p class="product-description product-description-'.$wo['story']['product']['id'].'"><b>' . $wo['story']['product']['category'] . '</b></p></div>';
-		echo '<div align="center" class="wow_post_prod_infos col-md-4"><b>' . $wo['lang']['price'] . '</b> <span class="product-description" style="max-height: none;">' . $symbol . $wo['story']['product']['price'] . ' (' . $text . ')</span></div>';
-		 echo '<div align="center"class="wow_post_prod_infos col-md-4"><b>' . $wo['lang']['phase_one'] . ' </b><span class="product-description" style="max-height: none;">24 Hours Countdown</span></div>';
+        echo '<div align="center" class="wow_post_prod_infos col-md-4"><b>' . $wo['lang']['price'] . '</b></br> <span class="product-description" style="max-height: none;">' . $symbol . $wo['story']['product']['price'] . ' (' . $text . ')</span></div>';
+		 echo '<div align="center"class="wow_post_prod_infos col-md-4"><b>' . $wo['lang']['phase_one'] . ' </b><span class="product-description" style="max-height: none;"><b>Countdown</b><br>24 Hours</span></div>';
         echo'</div>';
 		$fields = Wo_GetCustomFields('product'); 
 		if (!empty($fields)) {

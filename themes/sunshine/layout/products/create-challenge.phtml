@@ -2,33 +2,33 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="wow_pops_head">
-                <svg height="100px" preserveAspectRatio="none" version="1.1" viewBox="0 0 300 100" width="300px" xmlns="http://www.w3.org/2000/svg"><path d="M30.913,43.944c0,0,42.911-34.464,87.51-14.191c77.31,35.14,113.304-1.952,146.638-4.729 c48.654-4.056,69.94,16.218,69.94,16.218v54.396H30.913V43.944z" fill="currentColor" opacity="0.6"></path> <path d="M-35.667,44.628c0,0,42.91-34.463,87.51-14.191c77.31,35.141,113.304-1.952,146.639-4.729 c48.653-4.055,69.939,16.218,69.939,16.218v54.396H-35.667V44.628z" fill="currentColor" opacity="0.6"></path> <path d="M-34.667,62.998c0,0,56-45.667,120.316-27.839C167.484,57.842,197,41.332,232.286,30.428 c53.07-16.399,104.047,36.903,104.047,36.903l1.333,36.667l-372-2.954L-34.667,62.998z" fill="currentColor"></path></svg>
+                <svg height="100px" preserveAspectRatio="none" version="1.1" viewBox="0 0 300 100" width="600px" xmlns="http://www.w3.org/2000/svg"><path d="M30.913,43.944c0,0,42.911-34.464,87.51-14.191c77.31,35.14,113.304-1.952,146.638-4.729 c48.654-4.056,69.94,16.218,69.94,16.218v54.396H30.913V43.944z" fill="currentColor" opacity="0.6"></path> <path d="M-35.667,44.628c0,0,42.91-34.463,87.51-14.191c77.31,35.141,113.304-1.952,146.639-4.729 c48.653-4.055,69.939,16.218,69.939,16.218v54.396H-35.667V44.628z" fill="currentColor" opacity="0.6"></path> <path d="M-34.667,62.998c0,0,56-45.667,120.316-27.839C167.484,57.842,197,41.332,232.286,30.428 c53.07-16.399,104.047,36.903,104.047,36.903l1.333,36.667l-372-2.954L-34.667,62.998z" fill="currentColor"></path></svg>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"></path></svg></button>
-                <h4><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12,13A5,5 0 0,1 7,8H9A3,3 0 0,0 12,11A3,3 0 0,0 15,8H17A5,5 0 0,1 12,13M12,3A3,3 0 0,1 15,6H9A3,3 0 0,1 12,3M19,6H17A5,5 0 0,0 12,1A5,5 0 0,0 7,6H5C3.89,6 3,6.89 3,8V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V8C21,6.89 20.1,6 19,6Z"></path></svg> <?php echo $wo['lang']['create-new-challagne'] ?></h4>
+                <h4><svg xmlns="http://www.w3.org/2000/svg" style="margin-left: 10px;" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12,13A5,5 0 0,1 7,8H9A3,3 0 0,0 12,11A3,3 0 0,0 15,8H17A5,5 0 0,1 12,13M12,3A3,3 0 0,1 15,6H9A3,3 0 0,1 12,3M19,6H17A5,5 0 0,0 12,1A5,5 0 0,0 7,6H5C3.89,6 3,6.89 3,8V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V8C21,6.89 20.1,6 19,6Z"></path></svg> <?php echo $wo['lang']['create-new-challagne'] ?></h4>
             </div>
             <form class="create-album-form form-horizontal" id="challange_form" method="post">
                 <div class="modal-body">
                     <div class="app-general-alert setting-update-alert"></div>
 
                     <div class="row">
-                        <div class="col-md-8">
-                            <div class="wow_form_fields">
+                        <div class="col-md-6">
+                            <div class="wow_form_fields form-group" style="margin-left:15px;">
                                 <label for="name"><?php echo $wo['lang']['title'] ?></label>
-                                <input id="name" name="name" type="text" value="">
+                                <input id="name" class="form-control" name="name" type="text"  placeholder="Your Title" value="">
                             </div>
                         </div>
-                        <div class="col-md-4">
-                            <div class="wow_form_fields">
+                        <div class="col-md-5 offset-1 ">
+                            <div class="wow_form_fields form-group" style="margin-left:0px;">
                                 <label for="price"><?php echo $wo['lang']['coins']; ?></label>
-                                <input id="price" name="price" type="text" placeholder="0.00" value="">
+                                <input id="price" class="form-control" name="price" type="text" placeholder="0.00" value="">
                             </div>
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-8">
-                            <div class="wow_form_fields">
+                        <div class="col-md-6">
+                            <div class="wow_form_fields form-group" style="margin-left:15px;">
                                 <label for="category"><?php echo $wo['lang']['category'] ?></label>
-                                <select name="category" id="category" onchange="GetProductSubCategory(this)">
+                                <select name="category" class="form-control" id="category" onchange="GetProductSubCategory(this)">
                                    <option value="<?php echo $wo['lang']['playstation'] ?>"><?php echo $wo['lang']['playstation'] ?></option>
                                    <option value="<?php echo $wo['lang']['xbox'] ?>"><?php echo $wo['lang']['xbox'] ?></option>
                                    <option value="<?php echo $wo['lang']['pc'] ?>"><?php echo $wo['lang']['pc'] ?></option>
@@ -39,10 +39,10 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-4">
-                            <div class="wow_form_fields">
+                        <div class="col-md-5 offset-1">
+                            <div class="wow_form_fields form-group" style="margin-left:0px;">
                                 <label for="type"><?php echo $wo['lang']['crossplay']; ?></label>
-                                <select name="type" id="type">
+                                <select name="type" class="form-control" id="type">
                                     <option value="0"><?php echo $wo['lang']['yes'] ?></option>
                                     <option value="1"><?php echo $wo['lang']['no'] ?></option>
                                 </select>
@@ -53,9 +53,9 @@
 <!--                        <label for="no_of_challange"><?php echo $wo['lang']['no_of_challange'] ?></label>-->
 <!--                        <input type="text" name="no_of_challange" rows="3" id="no_of_challange" placeholder="0"></input>-->
 <!--                    </div>-->
-                    <div class="wow_form_fields">
+                    <div class="wow_form_fields form-group" style="width: 525px;margin-left: 16px;">
                         <label for="description"><?php echo $wo['lang']['description'] ?></label>
-                        <textarea name="description" rows="3" id="description" placeholder="<?php echo $wo['lang']['please_describe_your_product'] ?>"></textarea>
+                        <textarea name="description" class="form-control" rows="3" id="description" placeholder="<?php echo $wo['lang']['please_describe_your_product'] ?>"></textarea>
                     </div>
                     <?php $fields = Wo_GetCustomFields('product');
                     if (!empty($fields)) {
@@ -64,11 +64,11 @@
                         }
                     }
                     ?>
-                    <div class="wow_form_fields mb-0">
+                    <div class="wow_form_fields form-group mb-0" style="margin-left: 35px;">
                         <label for="photos"><?php echo $wo['lang']['photos']; ?></label>
                     </div>
                     <div class="wow_prod_imgs">
-                        <div class="upload-product-image" onclick="document.getElementById('product-photos').click(); return false">
+                        <div class="upload-product-image form-control" onclick="document.getElementById('product-photos').click(); return false">
                             <div class="upload-image-content">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M4,4H7L9,2H15L17,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4M12,7A5,5 0 0,0 7,12A5,5 0 0,0 12,17A5,5 0 0,0 17,12A5,5 0 0,0 12,7M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9Z" /></svg>
                             </div>

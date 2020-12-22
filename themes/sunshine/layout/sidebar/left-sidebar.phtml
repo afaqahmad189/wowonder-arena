@@ -57,6 +57,7 @@
 			</a>
 		</li>
 		<?php } ?>
+
 		<?php if ($wo['config']['pages'] == 1) { ?>
 		<li <?php if ($wo['page'] == 'my_pages') { ?>class="pageactive"<?php } ?>>
 			<a href="<?php echo Wo_SeoLink('index.php?link1=pages'); ?>" data-ajax="?link1=pages">
@@ -71,8 +72,23 @@
 			</a>
 		</li>
 		<?php } ?>
-		
-		
+
+<?php if ($wo['config']['classified'] == 1) { ?>
+<li class="link_separator"><?php echo $wo['lang']['arena'];?></li>
+<li>
+<a href="<?php echo Wo_SeoLink('index.php?link1=arena'); ?>" data-ajax="?link1=arena">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#7d8250" d="M12,18H6V14H12M21,14V12L20,7H4L3,12V14H4V20H14V14H18V20H20V14M20,4H4V6H20V4Z"></svg> <?php echo $wo['lang']['arena'];?>
+			</a>
+		</li>
+<?php } ?>
+<?php if ($wo['config']['classified'] == 1) { ?>
+		<li>
+			<a href="<?php echo Wo_SeoLink('index.php?link1=my-challanges'); ?>" data-ajax="?link1=my-challanges">
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#6a7f9a" d="M12,13A5,5 0 0,1 7,8H9A3,3 0 0,0 12,11A3,3 0 0,0 15,8H17A5,5 0 0,1 12,13M12,3A3,3 0 0,1 15,6H9A3,3 0 0,1 12,3M19,6H17A5,5 0 0,0 12,1A5,5 0 0,0 7,6H5C3.89,6 3,6.89 3,8V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V8C21,6.89 20.1,6 19,6ZZ"></svg> <?php echo $wo['lang']['my_challenges'];?>
+			</a>
+		</li>
+<?php } ?>
+<li>
 		<?php if ($wo['config']['blogs'] == 1) { ?>
 		<li class="link_separator"><?php echo $wo['lang']['blog'];?></li>
 		<li>

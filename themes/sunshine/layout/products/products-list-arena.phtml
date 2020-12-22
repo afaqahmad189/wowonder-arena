@@ -1,0 +1,37 @@
+<div class="product col-proxs-12 col-xs-6 col-sm-4 col-md-4" id="product-<?php echo $wo['product']['id']?>" data-id="<?php echo $wo['product']['id']?>">
+    <div class="product_info wow_main_mkt_prod">
+        <div class="product-image">
+        <div class="product-by" style="background:#222323; width:60px; border-radius:24px; text-align:center; position:absolute; margin-top:8px;
+        margin-left:8px;">
+                <?php
+                $product_by_ = $wo['product']['category'];
+                $product_by_ = str_replace('{product_category_name}', $wo['products_categories'][$wo['product']['category']], $product_by_);
+                ?>
+                <a href="javascript:void(0)" style="color:white;">
+                $<?php echo $wo['product']['price'];?>
+                </a>
+            </div>
+
+            <a href="<?php echo $wo['product']['url']?>"><img src="<?php echo $wo['product']['images'][0]['image_org'];?>"></a>
+            <?php if ($wo['loggedin']) { if (1==1) { ?>
+                <div class="product-links">
+
+                    <a class="more-info btn btn-mat" style="background-color: white; margin-top:100px; margin-left:35px;" href="<?php echo $wo['product']['url']?>" data-ajax="?link1=challange&id=<?php echo $wo['product']['post_id'];?>" target="_blank"><?php echo $wo['lang']['view'] ?></a>
+                    <a class="more-info btn btn-mat" style="background-color: dodgerblue; margin-top:100px; margin-left:3px;" href="<?php echo $wo['product']['url']?>"data-ajax="?link1=challange&id=<?php echo $wo['product']['post_id'];?>" target="_blank"><?php echo $wo['lang']['accept'] ?></a>
+                </div>
+            <?php } else { ?>
+            <?php } ?>
+            <?php } ?>
+            
+        </div>
+        <div class="produc_info">
+            <div class="product-title">
+                <a href="<?php echo $wo['product']['url']?>" title="<?php echo $wo['product']['name']?>"><?php echo $wo['product']['name']?></a>
+            </div>
+            <div class="product-price">
+<!--                --><?php //echo (!empty($wo['currencies'][$wo['product']['currency']]['symbol'])) ? $wo['currencies'][$wo['product']['currency']]['symbol'] : $wo['config']['classified_currency_s'];?><!----><?php //echo $wo['product']['price']?>
+            </div>
+        </div>
+    </div>
+    <div class="clear"></div>
+</div>

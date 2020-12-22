@@ -556,6 +556,64 @@ function Wo_UserData($user_id, $password = true) {
     return $fetched_data;
 }
 
+
+function Challanges_Between()
+{
+    global $wo, $sqlConnect;
+    $data       = array();
+    $query_one  = mysqli_query($sqlConnect, "SELECT * FROM ". T_ACCEPT_CHALLANGES ." A 
+                    JOIN ". T_USERS ." B ON A.challange_creator=B.user_id 
+                            JOIN ". T_CHALLENGES." C ON A.challange_id=C.id where A.status='PENDING'");
+    while ($fetched_data = mysqli_fetch_assoc($query_one)) {
+        $data[] = $fetched_data;
+    }
+
+    return $data;
+}
+
+
+function Challanges_acceptor()
+{
+    global $wo, $sqlConnect;
+    $data       = array();
+    $query_one  = mysqli_query($sqlConnect, "SELECT * FROM ". T_ACCEPT_CHALLANGES ." A 
+                    JOIN ". T_USERS ." B ON A.challange_acceptor=B.user_id 
+                            JOIN ". T_CHALLENGES." C ON A.challange_id=C.id where A.status='PENDING'");
+    while ($fetched_data = mysqli_fetch_assoc($query_one)) {
+        $data[] = $fetched_data;
+    }
+
+    return $data;
+}
+function Challanges_point()
+{
+    global $wo, $sqlConnect;
+    $data       = array();
+    $query_one  = mysqli_query($sqlConnect, "SELECT * FROM ". T_CHALLANGES_POINTS ." A 
+                    JOIN ". T_USERS ." B ON A.user_id=B.user_id ");
+    while ($fetched_data = mysqli_fetch_assoc($query_one)) {
+        $data[] = $fetched_data;
+    }
+    return $data;
+}
+
+
+
+
+
+function Wo_Challanges()
+{
+    global $wo, $sqlConnect;
+    $data       = array();
+    $query_one  = mysqli_query($sqlConnect, "SELECT * FROM ". T_CHALLENGES ." A JOIN ". T_USERS ." B 
+                            ON A.user_id=B.user_id");
+    while ($fetched_data = mysqli_fetch_assoc($query_one)) {
+        $data[] = $fetched_data;
+    }
+    return $data;
+}
+
+
 function Wo_UserStatus($user_id, $lastseen, $type = '') {
     global $wo;
     if ($wo['loggedin'] == false) {

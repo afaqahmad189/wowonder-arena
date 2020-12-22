@@ -1,26 +1,70 @@
+
 <div class="wo_settings_page wow_content">
 	<div class="avatar-holder">
 		<img src="<?php echo $wo['setting']['avatar']?>" alt="<?php echo $wo['setting']['name']?> Profile Picture" class="avatar">
 		<div class="infoz">
 			<h5 title="<?php echo $wo['setting']['name']?>"><a href="<?php echo Wo_SeoLink('index.php?link1=timeline&u=' . $wo['setting']['username'] . '');?>" data-ajax="?link1=timeline&u=<?php echo $wo['setting']['username'] ?>"><?php echo $wo['setting']['name']?></a></h5>
-			<p><?php echo $wo['lang']['my_balance'] ?> <?php echo Wo_GetCurrency($wo['config']['ads_currency']) . $wo['setting']['balance'];?></p>
-		</div>
-	</div>
-	<hr>
-  
+			<?php
+
+         $get=$_GET['amount'];
+			if($get=='wallet'){
+			?>
+			<p><?php echo $wo['lang']['wallet'] ?> <?php echo Wo_GetCurrency($wo['config']['ads_currency']) . $wo['setting']['wallet'];?></p>
+<?php
+            }
+			else{
+			?>
+            <p><?php echo $wo['lang']['my_balance'] ?> <?php echo Wo_GetCurrency($wo['config']['ads_currency']) . $wo['setting']['balance'];?></p>
+            <?php
+            }
+            ?>
+
+    </div>
+</div>
+<hr>
 	<?php if ($wo['setting']['balance'] < $wo['config']['m_withdrawal']): ?>
-	<div class="alert alert-danger">
-		<?php
-			$your_balance = str_replace('{balance}',  $wo['setting']['balance'], $wo['lang']['your_balance']); 
-			$your_balance = str_replace('{m_withdrawal}',  $wo['config']['m_withdrawal'], $your_balance); 
-			$your_balance = str_replace('$', Wo_GetCurrency($wo['config']['ads_currency']), $your_balance);
-			
-		?>
-		<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-alert-triangle"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12" y2="17"></line></svg> <?php echo $your_balance;?>
+
+    <?php
+	if($get=='wallet'){
+	?>
+<div class="alert alert-danger">
+<?php
+
+    if ($wo['setting']['wallet'] < $wo['config']['m_withdrawal']){
+    $your_balance = str_replace('{balance}',  $wo['setting']['wallet'], $wo['lang']['your_wallet']);
+    $your_balance = str_replace('{m_withdrawal}',  $wo['config']['m_withdrawal'], $your_balance);
+    $your_balance = str_replace('$', Wo_GetCurrency($wo['config']['ads_currency']), $your_balance);
+}
+?>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-alert-triangle"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12" y2="17"></line></svg> <?php echo $your_balance;?>
 	</div>
+<?php
+	}
+	else{
+	?>
+	<div class="alert alert-danger">
+<?php
+    $your_balance = str_replace('{balance}',  $wo['setting']['balance'], $wo['lang']['your_balance']);
+    $your_balance = str_replace('{m_withdrawal}',  $wo['config']['m_withdrawal'], $your_balance);
+    $your_balance = str_replace('$', Wo_GetCurrency($wo['config']['ads_currency']), $your_balance);
+
+?>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-alert-triangle"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12" y2="17"></line></svg> <?php echo $your_balance;?>
+	</div>
+	<?php
+	}
+	?>
+
+
 	<?php endif ?>
   
 	<form class="setting-general-form form-horizontal" method="post">
+	<?php
+	if($get=='wallet'){
+	?>
+<input type="hidden" name="wallet" value="wallet">
+	<?php }
+	?>
 		<div class="setting-general-alert setting-update-alert"></div>
 		
 		<div class="row">

@@ -104,6 +104,12 @@ $pages = array(
     'manage-invitation',
     'send_email',
     'live',
+
+    'manage_arena',
+    'check_challange',
+    'challange_acceptor',
+    'challange_point',
+
 );
 $mod_pages = array('dashboard', 'post-settings', 'manage-stickers', 'manage-gifts', 'manage-users', 'online-users', 'manage-stories', 'manage-pages', 'manage-groups', 'manage-posts', 'manage-articles', 'manage-events', 'manage-forum-threads', 'manage-forum-messages', 'manage-movies', 'manage-games', 'add-new-game', 'manage-user-ads', 'manage-reports', 'manage-third-psites', 'edit-movie','bank-receipts','job-categories','manage-jobs');
 
@@ -160,7 +166,6 @@ if ($wo['config']['live_video'] == 1) {
         } catch (Exception $e) {
             
         }
-        
     }
     else{
         if ($wo['config']['agora_live_video'] == 1 && $wo['config']['amazone_s3_2'] != 1) {
@@ -411,6 +416,41 @@ if ($wo['config']['live_video'] == 1) {
                             <?php } ?>
                         </ul>
                     </li>
+
+
+                    <?php if ($is_admin == true) { ?>
+                        <li <?php echo ($page=='manage_arena' || $page=='check_challange' || $page==' challange_acceptor'|| $page=='challange_point' ) ? 'class="active"' : ''; ?>>
+                            <a href="javascript:void(0);" class="menu-toggle">
+                                <i class="material-icons">dns</i>
+                                <span>Arena</span>
+                            </a>
+                            <ul class="ml-menu">
+                                <li <?php echo ($page == 'manage_arena') ? 'class="active"' : ''; ?>>
+                                    <a href="<?php echo Wo_LoadAdminLinkSettings('manage_arena'); ?>">
+                                        Arena Chalanges
+                                    </a>
+                                </li>
+                                <li <?php echo ($page == 'check_challange') ? 'class="active"' : ''; ?>>
+                                    <a href="<?php echo Wo_LoadAdminLinkSettings('check_challange'); ?>">
+                                        Chalange Creators
+                                    </a>
+                                </li>
+                                <li <?php echo ($page == 'challange_acceptor') ? 'class="active"' : ''; ?>>
+                                    <a href="<?php echo Wo_LoadAdminLinkSettings('challange_acceptor'); ?>">
+                                        Chalange Acceptor
+                                    </a>
+                                </li>
+                                <li <?php echo ($page == 'challange_point') ? 'class="active"' : ''; ?>>
+                                    <a href="<?php echo Wo_LoadAdminLinkSettings('challange_point'); ?>">
+                                        Earn Points
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    <?php } ?>
+
+
+
                     <?php if ($is_admin == true) { ?>
                     <li <?php echo ($page == 'pro-settings' || $page == 'pro-memebers' || $page == 'pro-payments' || $page == 'pro-features' || $page == 'pro-refund') ? 'class="active"' : ''; ?>>
                         <a href="javascript:void(0);" class="menu-toggle">

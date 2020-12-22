@@ -33,10 +33,19 @@ if ($f == 'request_payment') {
                     $errors[] = $error_icon . $wo['lang']['you_have_pending_request'];
                 } else if (!is_numeric($_POST['amount'])) {
                     $errors[] = $error_icon . $wo['lang']['invalid_amount_value'];
-                } else if (($wo['user']['balance'] < $_POST['amount'])) {
-                    $errors[] = $error_icon . $wo['lang']['invalid_amount_value_your'] . ''.Wo_GetCurrency($wo['config']['ads_currency']) . $wo['user']['balance'];
-                } else if ($wo['config']['m_withdrawal'] > $_POST['amount']) {
+                }
+
+                else if ($wo['config']['m_withdrawal'] > $_POST['amount']) {
                     $errors[] = $error_icon . $wo['lang']['invalid_amount_value_withdrawal'] . ' '.Wo_GetCurrency($wo['config']['ads_currency']) . $wo['config']['m_withdrawal'];
+                }
+                if($_POST['wallet']=='wallet'){
+                    if($wo['user']['wallet'] < $_POST['amount']){
+                        $errors[] = $error_icon . $wo['lang']['invalid_amount_value_your'] . '' . Wo_GetCurrency($wo['config']['ads_currency']) . $wo['user']['wallet'];
+                    }
+                }
+
+                else if (($wo['user']['balance'] < $_POST['amount'])) {
+                    $errors[] = $error_icon . $wo['lang']['invalid_amount_value_your'] . ''.Wo_GetCurrency($wo['config']['ads_currency']) . $wo['user']['balance'];
                 }
                 if (empty($errors)) {
                     if ($wo['config']['bank_withdrawal_system'] != 1 || empty($_POST['withdraw_method']) || $_POST['withdraw_method'] == 'paypal') {

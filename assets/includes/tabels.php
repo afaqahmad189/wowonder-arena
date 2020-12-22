@@ -8,6 +8,7 @@
 // | WoWonder - The Ultimate Social Networking Platform
 // | Copyright (c) 2016 WoWonder. All rights reserved.
 // +------------------------------------------------------------------------+
+define('T_CHALLANGES_POINTS','wo_challange_points');
 define('T_ACCEPT_CHALLANGES','wo_challange_accept');
 define('T_USERS','Wo_Users');
 define('T_COUNTRIES', 'Wo_Countries');

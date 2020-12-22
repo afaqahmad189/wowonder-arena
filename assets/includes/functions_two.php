@@ -3166,51 +3166,211 @@ function Wo_BanNewIp($ip) {
 
 function Accept_Challange($acceptor_id,$creator_id,$challange_id) {
     global $sqlConnect;
-    $query=mysqli_query($sqlConnect,"SELECT * from ". T_USERS ." A JOIN ". wo_challenges ." B
+    $query_five=mysqli_query($sqlConnect,"SELECT * FROM ". T_ACCEPT_CHALLANGES." 
+    where challange_creator=$creator_id and challange_acceptor=$acceptor_id and challange_id=$challange_id");
+    if(mysqli_num_rows($query_five)){
+        return "already_challange";
+    }
+    else{
+        $query=mysqli_query($sqlConnect,"SELECT * from ". T_USERS ." A JOIN ". wo_challenges ." B
      ON A.user_id=B.user_id
      where A.user_id=$creator_id and B.id=$challange_id");
-    if(mysqli_num_rows($query)){
-        $row=mysqli_fetch_assoc($query);
-        $wallet=$row['wallet'];
-        $challange_price=$row['price'];
-        $remianing_price=$wallet-$challange_price;
-        if($wallet<$challange_price){
-            return "no_wallet";
-        }
-        else{
-            $query_four=mysqli_query($sqlConnect,"SELECT * from ". T_ACCEPT_CHALLANGES ." where challange_id=$challange_id");
-            if($count=mysqli_num_rows($query_four)){
-               if($count<5){
-                   $query_one = mysqli_query($sqlConnect, "INSERT INTO " . T_ACCEPT_CHALLANGES . " (`challange_creator`,`challange_acceptor`,`challange_id`) 
-                    VALUES ('{$acceptor_id}','{$creator_id}','{$challange_id}')");
-                   if ($query_one) {
-                       $query_three=mysqli_query($sqlConnect,"UPDATE ". T_USERS ." set wallet=$remianing_price
-                        where user_id=$creator_id");
-                       return "accepted";
-                   }
-                   else{
-                       return "error";
-                   }
-               }
-               else{
-                   return "challange_limit_reach";
-               }
+        if(mysqli_num_rows($query)){
+            $row=mysqli_fetch_assoc($query);
+            $wallet=$row['wallet'];
+            $challange_price=$row['price'];
+            $remianing_price=$wallet-$challange_price;
+            if($wallet<$challange_price){
+                return "no_wallet";
             }
             else{
-                $query_one = mysqli_query($sqlConnect, "INSERT INTO " . T_ACCEPT_CHALLANGES . " (`challange_creator`,`challange_acceptor`,`challange_id`) 
-                    VALUES ('{$acceptor_id}','{$creator_id}','{$challange_id}')");
-                if ($query_one) {
-                    $query_three=mysqli_query($sqlConnect,"UPDATE ". T_USERS ." set wallet=$remianing_price
+                $query_four=mysqli_query($sqlConnect,"SELECT * from ". T_ACCEPT_CHALLANGES ." where challange_id=$challange_id");
+                if($count=mysqli_num_rows($query_four)){
+                    if($count<5){
+                        $query_one = mysqli_query($sqlConnect, "INSERT INTO " . T_ACCEPT_CHALLANGES . " (`challange_creator`,`challange_acceptor`,`challange_id`) 
+                    VALUES ('{$creator_id}','{$acceptor_id}','{$challange_id}')");
+                        if ($query_one) {
+                            $query_three=mysqli_query($sqlConnect,"UPDATE ". T_USERS ." set wallet=$remianing_price
                         where user_id=$creator_id");
-                    return "accepted";
+                            return "accepted";
+                        }
+                        else{
+                            return "error";
+                        }
+                    }
+                    else{
+                        return "challange_limit_reach";
+                    }
                 }
                 else{
-                    return "error";
+                    $query_one = mysqli_query($sqlConnect, "INSERT INTO " . T_ACCEPT_CHALLANGES . " (`challange_creator`,`challange_acceptor`,`challange_id`) 
+                    VALUES ('{$creator_id}','{$acceptor_id}','{$challange_id}')");
+                    if ($query_one) {
+                        $query_three=mysqli_query($sqlConnect,"UPDATE ". T_USERS ." set wallet=$remianing_price
+                        where user_id=$creator_id");
+                        return "accepted";
+                    }
+                    else{
+                        return "error";
+                    }
                 }
             }
         }
     }
 }
+function Check_Challange($challange_id){
+    global $sqlConnect;
+    $query=mysqli_query($sqlConnect,"SELECT * FROM ". T_ACCEPT_CHALLANGES." 
+    where challange_id=$challange_id");
+    if(mysqli_num_rows($query)){
+        return "exist";
+    }
+    else{
+        return'not_exist';
+    }
+}
+function Win_Challange($acceptor_id,$creator_id,$challange_id){
+    global $sqlConnect;
+    $query_five=mysqli_query($sqlConnect,"SELECT * FROM ". T_ACCEPT_CHALLANGES." 
+    where challange_acceptor=$acceptor_id and challange_id=$challange_id and status='PENDING'");
+    if(mysqli_num_rows($query_five)){
+        $query=mysqli_query($sqlConnect,"SELECT * FROM ". T_ACCEPT_CHALLANGES." 
+    where challange_acceptor=$acceptor_id and challange_id=$challange_id ");
+        if(mysqli_num_rows($query)) {
+            $query_one = mysqli_query($sqlConnect, "SELECT * from  " . T_CHALLENGES . " where id=$challange_id");
+            if (mysqli_num_rows($query_one)) {
+                $row = mysqli_fetch_assoc($query_one);
+                $challange_price = $row['price'];
+                $query_two=mysqli_query($sqlConnect,"UPDATE ". T_ACCEPT_CHALLANGES ." set win_by=$acceptor_id ,
+            loose_by=$creator_id,points=$challange_price,status='COMPLETE'
+             where challange_id=$challange_id and challange_acceptor=$acceptor_id");
+                if($query_two){
+                    $query_three=mysqli_query($sqlConnect,"INSERT INTO ". T_CHALLANGES_POINTS." (user_id,win_point)
+                VALUES($acceptor_id,$challange_price)");
+                    if($query_three){
+                        $query_four=mysqli_query($sqlConnect,"UPDATE ". T_USERS ." set wallet=wallet+$challange_price
+             where user_id=$acceptor_id");
+                        if($query_three) {
+                            return "winner";
+                        }
+                    }
+                }
+            }
+        }
+        else{
+            $query=mysqli_query($sqlConnect,"SELECT * FROM ". T_ACCEPT_CHALLANGES." 
+    where challange_creator=$creator_id and challange_acceptor=$acceptor_id and challange_id=$challange_id");
+            if(mysqli_num_rows($query)){
+                $query_one = mysqli_query($sqlConnect, "SELECT * from  " . T_CHALLENGES . " where id=$challange_id");
+                if (mysqli_num_rows($query_one)) {
+                    $row = mysqli_fetch_assoc($query_one);
+                    $challange_price = $row['price'];
+                    $query_two=mysqli_query($sqlConnect,"UPDATE ". T_ACCEPT_CHALLANGES ." set win_by=$creator_id ,
+            loose_by=$acceptor_id,points=$challange_price,status='COMPLETE'
+             where challange_id=$challange_id and challange_acceptor=$acceptor_id and challange_creator=$creator_id ");
+                    if($query_two){
+                        $query_three=mysqli_query($sqlConnect,"INSERT INTO ". T_CHALLANGES_POINTS." (user_id,win_point)
+                VALUES($creator_id,$challange_price)");
+                        if($query_three){
+                            $query_four=mysqli_query($sqlConnect,"UPDATE ". T_USERS ." set wallet=wallet+$challange_price
+             where user_id=$creator_id");
+                            if($query_three) {
+                                return "winner";
+                            }
+                        }
+                    }
+                }
+            }
+            else{
+                return "playing";
+            }
+        }
+    }
+    else{
+        return "played";
+    }
+}
+function Loose_Challange($acceptor_id,$creator_id,$challange_id){
+    global $sqlConnect;
+    $query_five=mysqli_query($sqlConnect,"SELECT * FROM ". T_ACCEPT_CHALLANGES." 
+    where challange_acceptor=$acceptor_id and challange_id=$challange_id and status='PENDING'");
+    if(mysqli_num_rows($query_five)){
+        $query=mysqli_query($sqlConnect,"SELECT * FROM ". T_ACCEPT_CHALLANGES." 
+    where challange_acceptor=$acceptor_id and challange_id=$challange_id ");
+        if(mysqli_num_rows($query)) {
+            $query_one = mysqli_query($sqlConnect, "SELECT * from  " . T_CHALLENGES . " where id=$challange_id");
+            if (mysqli_num_rows($query_one)) {
+                $row = mysqli_fetch_assoc($query_one);
+                $challange_price = $row['price'];
+                $query_two=mysqli_query($sqlConnect,"UPDATE ". T_ACCEPT_CHALLANGES ." set loose_by=$acceptor_id ,
+                win_by=$creator_id,points=$challange_price,status='COMPLETE'
+                 where challange_id=$challange_id and challange_acceptor=$acceptor_id");
+                if($query_two){
+                    $query_three=mysqli_query($sqlConnect,"INSERT INTO ". T_CHALLANGES_POINTS." (user_id,loose_point)
+                VALUES($acceptor_id,$challange_price)");
+                    if($query_three){
+                            return "loose";
+                    }
+                }
+            }
+        }
+        else{
+            $query=mysqli_query($sqlConnect,"SELECT * FROM ". T_ACCEPT_CHALLANGES." 
+    where challange_creator=$creator_id and challange_acceptor=$acceptor_id and challange_id=$challange_id");
+            if(mysqli_num_rows($query)){
+                $query_one = mysqli_query($sqlConnect, "SELECT * from  " . T_CHALLENGES . " where id=$challange_id");
+                if (mysqli_num_rows($query_one)) {
+                    $row = mysqli_fetch_assoc($query_one);
+                    $challange_price = $row['price'];
+                    $query_two=mysqli_query($sqlConnect,"UPDATE ". T_ACCEPT_CHALLANGES ." set loose_by=$creator_id ,
+             win_by=$acceptor_id,points=$challange_price,status='COMPLETE'
+             where challange_id=$challange_id and challange_acceptor=$acceptor_id and challange_creator=$creator_id ");
+                    if($query_two){
+                        $query_three=mysqli_query($sqlConnect,"INSERT INTO ". T_CHALLANGES_POINTS." (user_id,loose_point)
+                VALUES($creator_id,$challange_price)");
+                        if($query_three){
+                                return "loose";
+                        }
+                    }
+                }
+            }
+            else{
+
+                return'playing';
+
+            }
+        }
+    }
+    else{
+        return "played";
+    }
+}
+function Dispute_Challange($acceptor_id,$creator_id,$challange_id){
+    global $sqlConnect;
+    $query_five=mysqli_query($sqlConnect,"SELECT * FROM ". T_ACCEPT_CHALLANGES." 
+    where challange_acceptor=$acceptor_id and challange_id=$challange_id and challange_creator=$creator_id and status='PENDING'");
+    if(mysqli_num_rows($query_five)){
+
+        $query_two=mysqli_query($sqlConnect,"DELETE FROM ". T_ACCEPT_CHALLANGES." where challange_acceptor=$acceptor_id and challange_id=$challange_id and challange_creator=$creator_id ");
+        if($query_two){
+            $query_one = mysqli_query($sqlConnect, "SELECT * from  " . T_CHALLENGES . " where id=$challange_id");
+            if (mysqli_num_rows($query_one)) {
+                $row = mysqli_fetch_assoc($query_one);
+                $challange_price = $row['price'];
+                $query_four=mysqli_query($sqlConnect,"UPDATE ". T_USERS ." set wallet=wallet+$challange_price
+             where user_id=$creator_id");
+                if($query_four){
+                    return 'dispute';
+                }
+            }
+        }
+    }
+    else{
+        return "played";
+    }
+}
+
+
 
 function Wo_IsIpBanned($id) {
     global $sqlConnect;

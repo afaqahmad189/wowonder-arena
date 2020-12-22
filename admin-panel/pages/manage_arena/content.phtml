@@ -1,0 +1,46 @@
+<div class="container-fluid">
+    <div class="block-header">
+        <h2>Arena > Arena Challagnes</h2>
+    </div>
+    <!-- Vertical Layout -->
+    <div class="row">
+<div class="col-lg-12 col-md-12">
+  <div class="card">
+      <div class="header">
+          <h2>Arena > Arena Challagnes</h2>
+      </div>
+      <div class="body">
+          <div class="row">
+
+            <div class="col-md-4" style="margin-bottom:0;">
+
+            </div>
+          </div>
+          <div class="clearfix"></div>
+          <div class="table-responsive1">
+              <table class="table table-bordered table-striped table-hover">
+                  <thead>
+                  <tr>
+                               <th>ID</th>
+                              <th>Username</th>
+                              <th>Challange Name</th>
+                              <th>Price</th>
+                              <th>Category</th>
+                              <th>Description</th>
+                  </tr>
+                  </thead>
+                   <tbody>
+<?php
+foreach (Wo_Challanges() as $wo['createdleadlist']) {
+    echo Wo_LoadAdminPage('manage_arena/list');
+}
+?>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="clearfix"></div>
+</div>
+</div>
